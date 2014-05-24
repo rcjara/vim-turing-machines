@@ -1,0 +1,93 @@
+" ===================
+" A very simple macro
+" ===================
+
+= reg s (for simple)
+foa hi there
+
+" Breakdown:
+" fo            -> go forward to an 'o'
+" a hi there  -> append ' hi there' and escape
+
+" =========================
+" Wrapping macros in macros
+" =========================
+
+= reg r (for repeat)
+0@sj
+
+" Breakdown:
+" 0  -> go to the beginning of the line
+" @s -> execute macro s
+" j  -> then go to the next line
+
+" ===========================
+" Simple self modifying macro
+" ===========================
+
+= reg m (for modify)
+ggdG1Ohello 1"mptOw"mdd
+
+" Breakdown:
+" ggdG          -> delete the entire file
+" 1Ohello 1   -> one time, enter the line 'hello 1'
+" "mp           -> put this macro
+" tO          -> find the character in this macro before O
+                   (it is a '1' the first time this runs)
+                   and then increment it .
+" w         -> find the number after hello and increment that as well
+" "mdd          -> put the newly modified macro back into reg m.
+
+" NOTE:
+" You might not get the results you expect if you run it multiple times (e.g. 10@m).
+" The macro runs however many times you called, but only with the version of the macro as it existed when you typed @m.
+" Calling from another macro works fine, however.
+
+= reg n (for wanting to make a Number of runs)
+@m
+
+" =========================
+" A Macro with Conditionals
+" =========================
+" This command chooses the yanks the appropriate macro into reg a (for action), and then performs it
+= reg p (for program)
+0y$/^":f:w"ay$@a
+
+" These lines contain the macros that will be the actions
+hello:    A hi therej
+goodbye:  dd
+
+Breakdown:
+" starting in the left split
+" 0y$    -> yank the line you're on and jump to the right split
+" /^": -> perform a search for the line just lanked followed by a colon
+" f:w"ay$  -> yank the text after the colon into reg a
+" @a     -> go to the left split and perform reg a
+
+
+" ======================
+" load all of the macros
+" ======================
+
+" you may have noticed that before each macro was a line with: = reg ?
+" we can use those lines to automatically load all of the macros in this file
+" into the appropriate registers
+= reg l (for load)
+o:vsplit /tmp/run-file:let @a="":g/^= reg /y A"ap:let @a="":g/^= reg /.,+1y A"apggdj
+
+Breakdown:
+o:vsplit /tmp/run-file  -> Make sure this is the only window, then open a working file
+:let @a=""                -> Clear out reg a
+:g/^= reg /y A          -> yank all the '= reg' lines (and the ones after them) into a.
+"ap                       -> paste those reg lines into the working file
+:let @a=""                -> Clear out reg a
+:g/^= reg /.,+1y A      -> yank all the '= reg' lines (and the ones after them) into a.
+"ap                       -> paste those reg lines into the working file
+ggdj                        -> clear out the two empty lines that have appeared at the top of the file
+
+" ===============
+" compile a macro
+" ===============
+" takes one of the breakdowns and copies it to the default reg so that you can put it
+= reg c
+omtyGpmwVjjG:s/\s\+->.*//'wVG:j!dd't
