@@ -5,9 +5,9 @@
 = reg s (for simple)
 foa hi there
 
-" Breakdown:
-" fo            -> go forward to an 'o'
-" a hi there  -> append ' hi there' and escape
+Breakdown:
+fo            -> go forward to an 'o'
+a hi there  -> append ' hi there' and escape
 
 " =========================
 " Wrapping macros in macros
@@ -16,10 +16,10 @@ foa hi there
 = reg r (for repeat)
 0@sj
 
-" Breakdown:
-" 0  -> go to the beginning of the line
-" @s -> execute macro s
-" j  -> then go to the next line
+Breakdown:
+0  -> go to the beginning of the line
+@s -> execute macro s
+j  -> then go to the next line
 
 " ===========================
 " Simple self modifying macro
@@ -28,20 +28,19 @@ foa hi there
 = reg m (for modify)
 ggdG1Ohello 1"mptOw"mdd
 
-" Breakdown:
-" ggdG          -> delete the entire file
-" 1Ohello 1   -> one time, enter the line 'hello 1'
-" "mp           -> put this macro
-" tO          -> find the character in this macro before O
-                   (it is a '1' the first time this runs)
-                   and then increment it .
-" w         -> find the number after hello and increment that as well
-" "mdd          -> put the newly modified macro back into reg m.
+Breakdown:
+ggdG          -> delete the entire file
+1Ohello 1   -> one time, enter the line 'hello 1'
+"mp           -> put this macro
+tO          -> find and increment the first number
+w           -> find and increment the second number
+"mdd          -> put the newly modified macro back into reg m.
 
 " NOTE:
-" You might not get the results you expect if you run it multiple times (e.g. 10@m).
-" The macro runs however many times you called, but only with the version of the macro as it existed when you typed @m.
-" Calling from another macro works fine, however.
+" You might not get the results you expect if you run it multiple times.
+" The macro runs however many times you called, but only with the version
+" of the macro as it existed when you typed @m. Calling from another macro
+" works fine, however.
 
 = reg n (for wanting to make a Number of runs)
 @m
@@ -49,7 +48,9 @@ ggdG1Ohello 1"mptOw"mdd
 " =========================
 " A Macro with Conditionals
 " =========================
-" This command chooses the yanks the appropriate macro into reg a (for action), and then performs it
+" This command chooses the yanks the appropriate macro into reg a
+" (for action), and then performs it
+
 = reg p (for program)
 0y$/^":f:w"ay$@a
 
@@ -58,20 +59,20 @@ hello:    A hi therej
 goodbye:  dd
 
 Breakdown:
-" starting in the left split
-" 0y$    -> yank the line you're on and jump to the right split
-" /^": -> perform a search for the line just lanked followed by a colon
-" f:w"ay$  -> yank the text after the colon into reg a
-" @a     -> go to the left split and perform reg a
+starting in the left split
+0y$    -> yank the line you're on and jump to the right split
+/^": -> perform a search for the line just lanked followed by a colon
+f:w"ay$  -> yank the text after the colon into reg a
+@a     -> go to the left split and perform reg a
 
 
 " ======================
 " load all of the macros
 " ======================
+" You may have noticed that before each macro was a line with: = reg ?
+" We can use those lines to automatically load all of the macros in this file
+" into the appropriate registers.
 
-" you may have noticed that before each macro was a line with: = reg ?
-" we can use those lines to automatically load all of the macros in this file
-" into the appropriate registers
 = reg l (for load)
 o:vsplit /tmp/run-file:let @a="":g/^= reg /y A"ap:let @a="":g/^= reg /.,+1y A"apggdj
 
@@ -88,6 +89,16 @@ ggdj                        -> clear out the two empty lines that have appeared 
 " ===============
 " compile a macro
 " ===============
-" takes one of the breakdowns and copies it to the default reg so that you can put it
+" Takes one of the breakdowns (selected in visual mode) and copy it
+" to the default register.
+
 = reg c
-omtyGpmwVjjG:s/\s\+->.*//'wVG:j!dd't
+omtyGpmwVG:s/\s\+->.*//'wVG:j!dd't
+
+Breakdown:
+omt               -> Mark the top of the visual selection
+yGp               -> Yank the selected area and put it at the bottom of the file
+mwVG              -> Mark where we are, select to the bottom of the file
+:s/\s\+->.*//   -> remove non-comment parts of the macros
+'wVG:j!         -> go back to the mark, join together the lines without spaces
+dd't              -> delete the complete macro and go back where we started
