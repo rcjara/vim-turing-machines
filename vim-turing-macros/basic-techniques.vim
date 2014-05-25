@@ -74,11 +74,13 @@ f:w"ay$  -> yank the text after the colon into reg a
 " into the appropriate registers.
 
 = reg l (for load)
-o:vsplit /tmp/run-file:let @a="":g/^= reg /y AV"ap:let @a="":g/^= reg /.,+1y A"apggdj
-o:vsplit /tmp/run-file:let @a="":g/^= reg /y A"apdkG$s1 +GJA0V:!bc"nye
+o:vsplit /tmp/run-file:let @a="":g/^= reg /y A"apdkG$s1 +GJA 0V:!bc"nye:let @a="":g/^= reg /.,+1y A"apggdjO0wwylj0:y D2"CRj"iddO@i0"nP"rdd@r
 
 Breakdown:
-o:vsplit /tmp/run-file  -> Make sure this is the only window, then open a working file
+  -> set up a working window
+o:vsplit /tmp/run-file
+
+  -> get count of number of macros
 :let @a=""                -> Clear out reg a
 :g/^= reg /y A          -> yank all the '= reg' lines (and the ones after them) into a.
 "ap                       -> paste those reg lines into the working file
@@ -86,10 +88,24 @@ dk                          -> trim out empty line
 G$s1 +                  -> replace all of the lines with '1 +'
 GJA 0                   -> join all the lines together and tack a zero on the end
 V:!bc"nye                 -> pipe the equation to bc and yank the result into reg n
+
+  -> copy the macros to the working space
 :let @a=""                -> Clear out reg a
 :g/^= reg /.,+1y A      -> yank all the '= reg' lines (and the ones after them) into a.
-V"ap                      -> paste those reg lines into the working file
-ggdj                        -> clear out the two empty lines that have appeared at the top of the file
+"ap                       -> paste those reg lines into the working file
+ggdj                        -> clear out two empty lines that were a side effect
+  -> write out sub macro i
+O                           -> start writing
+0wwyl                       -> grap which reg to write to
+j0:y D2"CRj             -> yank the macro into the above reg
+                          -> stop writing
+"idd                        -> copy it into i
+  -> write out sub macro r, which will repeat i, n times
+O@i0"nP"rdd
+  -> call it
+@r
+
+
 
 " ===============
 " compile a macro
