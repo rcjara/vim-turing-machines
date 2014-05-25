@@ -74,16 +74,21 @@ f:w"ay$  -> yank the text after the colon into reg a
 " into the appropriate registers.
 
 = reg l (for load)
-o:vsplit /tmp/run-file:let @a="":g/^= reg /y A"ap:let @a="":g/^= reg /.,+1y A"apggdj
+o:vsplit /tmp/run-file:let @a="":g/^= reg /y AV"ap:let @a="":g/^= reg /.,+1y A"apggdj
+o:vsplit /tmp/run-file:let @a="":g/^= reg /y A"apdkG$s1 +GJA0V:!bc"nye
 
 Breakdown:
 o:vsplit /tmp/run-file  -> Make sure this is the only window, then open a working file
 :let @a=""                -> Clear out reg a
 :g/^= reg /y A          -> yank all the '= reg' lines (and the ones after them) into a.
 "ap                       -> paste those reg lines into the working file
+dk                          -> trim out empty line
+G$s1 +                  -> replace all of the lines with '1 +'
+GJA 0                   -> join all the lines together and tack a zero on the end
+V:!bc"nye                 -> pipe the equation to bc and yank the result into reg n
 :let @a=""                -> Clear out reg a
 :g/^= reg /.,+1y A      -> yank all the '= reg' lines (and the ones after them) into a.
-"ap                       -> paste those reg lines into the working file
+V"ap                      -> paste those reg lines into the working file
 ggdj                        -> clear out the two empty lines that have appeared at the top of the file
 
 " ===============
@@ -92,7 +97,7 @@ ggdj                        -> clear out the two empty lines that have appeared 
 " Takes one of the breakdowns (selected in visual mode) and copy it
 " to the default register.
 
-= reg c
+= reg c (for compile)
 omtyGpmwVG:s/\s\+->.*//'wVG:j!dd't
 
 Breakdown:
@@ -101,4 +106,4 @@ yGp               -> Yank the selected area and put it at the bottom of the file
 mwVG              -> Mark where we are, select to the bottom of the file
 :s/\s\+->.*//   -> remove non-comment parts of the macros
 'wVG:j!         -> go back to the mark, join together the lines without spaces
-dd't              -> delete the complete macro and go back where we started
+dd't              -> dd the macro and go back the the beginning
