@@ -6,7 +6,7 @@
 " into the appropriate registers.
 
 = reg l (for load)
-o:vsplit /tmp/run-file:let @a="":g/^= reg /y A"apdkVG:!wc -l"nye:let @a="":g/^= reg /.,+1y A"apggdjO0wwylj0:y D2"CRj"iddO@i0"nP"rdd@r
+o:vsplit /tmp/run-file:let @a=""l:g/^= reg /y Ah"apdk:%!wc -l"nye:let @a=""l:g/^= reg /.,+1y Ah"apggdjO0wwylj0:y D2"CRj"iddO@i0"nP"rdd@r
 
 Breakdown:
   -> set up a working window
@@ -14,21 +14,20 @@ Breakdown:
 
   -> get count of number of macros
 :let @a=""                -> Clear out reg a
-:g/^= reg /y A          -> yank all the '= reg' lines (and the ones after them) into a.
-"ap                       -> paste those reg lines into the working file
+l:g/^= reg /y A          -> yank all the '= reg' lines (and the ones after them) into a.
+h"ap                       -> paste those reg lines into the working file
 dk                          -> trim out empty line
 :%!wc -l                  -> pipe the lines to wc -l
 "nye                        -> yank the result into reg n
   -> copy the macros to the working space
 :let @a=""                -> Clear out reg a
-:g/^= reg /.,+1y A      -> yank all the '= reg' lines (and the ones after them) into a.
-"ap                       -> paste those reg lines into the working file
+l:g/^= reg /.,+1y A      -> yank all the '= reg' lines (and the ones after them) into a.
+h"ap                       -> paste those reg lines into the working file
 ggdj                        -> clear out two empty lines that were a side effect
   -> write out sub macro i
 O                           -> start writing
 0wwyl                       -> grap which reg to write to
-dd
-0:y D2"CRj              -> yank the macro into the above reg
+j0:y D2"CRj              -> yank the macro into the above reg
                           -> stop writing
 "idd                        -> copy it into i
   -> write out sub macro r, which will repeat i, n times
@@ -54,3 +53,6 @@ mwVG              -> Mark where we are, select to the bottom of the file
 :s/\s\+->.*//   -> remove non-comment parts of the macros
 'wVG:j!         -> go back to the mark, join together the lines without spaces
 dd't              -> dd the macro and go back the the beginning
+
+= reg z (for compile)
+something z like

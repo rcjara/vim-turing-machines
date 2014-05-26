@@ -52,15 +52,17 @@ w           -> find and increment the second number
 " (for action), and then performs it
 
 = reg p (for program)
-0y$/^":f:w"ay$@a
+0y$l/^":f:w"ay$h@a
 
 " These lines contain the macros that will be the actions
-hello:    A hi therej
-goodbye:  dd
+hello:    A hi therej@p
+goodbye:  dd@p
+multiply: yypkOjjoj@p
+end:      dd
 
 Breakdown:
 starting in the left split
-0y$    -> yank the line you're on and jump to the right split
+0y$l   -> yank the line you're on and jump to the right split
 /^": -> perform a search for the line just lanked followed by a colon
 f:w"ay$  -> yank the text after the colon into reg a
-@a     -> go to the left split and perform reg a
+h@a    -> go to the left split and perform reg a
