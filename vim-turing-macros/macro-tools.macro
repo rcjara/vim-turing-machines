@@ -53,6 +53,3 @@ mwVG              -> Mark where we are, select to the bottom of the file
 :s/\s\+->.*//   -> remove non-comment parts of the macros
 'wVG:j!         -> go back to the mark, join together the lines without spaces
 dd't              -> dd the macro and go back the the beginning
-
-= reg z (for compile)
-something z like
