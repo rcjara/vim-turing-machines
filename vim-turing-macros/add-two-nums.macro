@@ -1,0 +1,108 @@
+" A program to add one to a binary number
+" list of registers that will be used
+" p - the macro that runs the program
+" s - the state of the turing machine
+" l - one step of the main loop
+" c - the individual command used to look up the action
+" a - the action that will be performed
+" f - a sub macro that finds the action to be and copies it to reg a
+
+= reg p (for program)
+GoANSWERggOREAD-10"sy$dd@l
+GoANSWERggOREAD-10"sy$dd@l
+
+Breakdown:
+GoANSWER     -> write answer at the bottom of the file
+gg             -> go to beginning of file
+OREAD-1      -> write one the initial state
+0"sy$          -> store it in reg s
+dd             -> delete the line written out
+@l             -> start the main loop
+
+
+= reg l (for main loop)
+0"cy$l@fh@a
+
+Breakdown:
+0"cy$    -> yank the command into c
+l@f    -> jump to the right window and execute f
+h@a    -> jump to the working window and execute the action
+
+= reg f (for find command)
+/^s\s.*c.*:f:ll"ay$j0"syE
+
+Breakdown:
+/^s\s.*c.*:  -> search for state followed by specific command
+f:ll"ay$           -> yank the action into reg a
+j0"syE             -> yank the next state into reg s
+
+
+" READ-1
+READ-1 NUM1 : j@l
+READ-1
+READ-1 NUM2 : j@l
+NO-NUM1
+READ-1 0    : dd@l
+SCAN-FOR-2-C0
+READ-1 1    : dd@l
+SCAN-FOR-2-C1
+
+" SCAN-FOR-2-C0
+SCAN-FOR-2-C0 NUM2 : j@l
+READ-2-C0
+SCAN-FOR-2-C0 0 1 : j@l
+SCAN-FOR-2-C0
+
+" SCAN-FOR-2-C1
+SCAN-FOR-2-C1 NUM2 : j@l
+READ-2-C1
+SCAN-FOR-2-C1 0 1 : j@l
+SCAN-FOR-2-C1
+
+" NO-NUM1
+NO-NUM1 ANSWER : kdggG@l
+FINAL-WRITE
+NO-NUM1 0 : ddG@l
+WRITE-0
+NO-NUM1 1 : ddG@l
+WRITE-1
+
+" READ-2-C0
+READ-2-C0 ANSWER : G@l
+WRITE-0
+READ-2-C0 0 : ddG@l
+WRITE-0
+READ-2-C0 1 : ddG@l
+WRITE-1
+
+" READ-2-C1
+READ-2-C1 ANSWER : G@l
+WRITE-1
+READ-2-C1 0 : ddG@l
+WRITE-1
+READ-2-C1 1 : ddG@l
+WRITE-A
+
+" WRITE-0
+WRITE-0 A : 0c$1gg@l
+READ-1
+WRITE-0 0 1 ANSWER : o0gg@l
+READ-1
+
+" WRITE-1
+WRITE-1 A : 0c$0Agg@l
+READ-1
+WRITE-1 0 1 ANSWER : o1gg@l
+READ-1
+
+" WRITE-A
+WRITE-A A : 0c$1Agg@l
+READ-1
+WRITE-A 0 1 ANSWER : o0Agg@l
+READ-1
+
+" FINAL-WRITE
+FINAL-WRITE A : 0c$1@l
+FINAL-WRITE
+FINAL-WRITE 0 1 ANSWER : oCOMPLETE
+COMPLETE
