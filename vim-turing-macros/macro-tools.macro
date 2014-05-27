@@ -43,7 +43,7 @@ O@i0"nP"rdd
 " Takes one of the breakdowns (selected in visual mode) and copy it
 " to the default register.
 
-= reg c (for compile)
+= reg k (for compile)
 omtyGpmwVG:s/\s\+->.*//'wVG:j!dd't
 
 Breakdown:
