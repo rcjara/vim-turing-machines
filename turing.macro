@@ -1,0 +1,36 @@
+" Variables
+" reg c = command
+" reg s = state
+
+= reg j (for jump to command)
+/^s\s\+{\_[^}]*(c)\_[^}]*}/(c)/ : ww
+
+ -> jump to the state containing your command
+ -> or fail if it doesn't exist
+/         -> start search
+^s\s\+{ -> line starting with [state] {
+\_[^}]*   -> no closing braces
+(c)     -> the command wrapped in parentheses
+\_[^}]*   -> no closing braces
+}         -> a closing brace starting a line
+        -> enter (to start the search)
+
+ -> now we are know the bracketed group we are in contains
+ -> so we are safe to jump to the specific command more
+ -> niaively
+/(c)  -> jump to command
+/ : ww  -> jump to the first subexpression
+
+
+STATE {
+  (1) : SKIP    DWN STATE
+  (2) : WRITE 1 DWN STATE
+  (3) : DEL     HLD STATE
+  (5) : SKIP    HLD OTHER
+}
+
+OTHER {
+  (4): INS 5 DWN DONE
+}
+
+DONE { }
