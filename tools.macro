@@ -8,7 +8,7 @@
 = reg l (for load)
 o:vsplit /tmp/run-file:let @a=""l:g/^= reg /y Ah"apdk:%!wc -l"nye:let @a=""l:g/^= reg /.,+1y Ah"apggdjO0wwylj0:y D2"CRj"iddO@i0"nP"rdd@r
 
-Breakdown:
+=BEGIN
   -> set up a working window
 o:vsplit /tmp/run-file
 
@@ -34,6 +34,7 @@ j0:y D2"CRj              -> yank the macro into the above reg
 O@i0"nP"rdd
   -> call it
 @r
+=END
 
 
 
@@ -44,17 +45,28 @@ O@i0"nP"rdd
 " to the default register.
 
 = reg k (for compile)
-omtyGpmwVG:s/\s\+->.*//'wVG:j!dd't?^= regpk0ww"rylo"yyhh"rp"rdd@rk
+?^= reg [a-z]\>/^=BEGIN\s*$jV/^=END\s*$komtyGpmwVG:s/\s\+->.*//'wVG:j!dd't?^= regpk0ww"rylo"yyhh"rp"rdd@rk
 
 
-Breakdown:
+=BEGIN
+
+ -> Select the components of the macro in visual mode
+?^= reg [a-z]\> -> jump back the begining of the register definition
+/^=BEGIN\s*$    -> jump forward to the beginning of the macro
+jV/^=END\s*$k   -> begin visual mode and go down to before the end of the definition
+
+ -> Strip out comments and format the macro
 omt               -> Mark the top of the visual selection
 yGp               -> Yank the selected area and put it at the bottom of the file
 mwVG              -> Mark where we are, select to the bottom of the file
 :s/\s\+->.*//   -> remove non-comment parts of the macros
 'wVG:j!         -> go back to the mark, join together the lines without spaces
+
+  -> Load the macro into the appropriate register
 dd't              -> dd the macro and go back the the beginning
 ?^= regp        -> jump back to the label for the reg, put the macro
 k0ww"ryl          -> yank register name into r
 o"yyhh"rp"rdd   -> write out a macro to yank compile macro and put it in r
 @rk               -> call it and move back to the register
+
+=END
