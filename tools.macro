@@ -44,7 +44,8 @@ O@i0"nP"rdd
 " to the default register.
 
 = reg k (for compile)
-omtyGpmwVG:s/\s\+->.*//'wVG:j!dd't
+omtyGpmwVG:s/\s\+->.*//'wVG:j!dd't?^= regpk0ww"rylo"yyhh"rp"rdd@rk
+
 
 Breakdown:
 omt               -> Mark the top of the visual selection
@@ -53,3 +54,7 @@ mwVG              -> Mark where we are, select to the bottom of the file
 :s/\s\+->.*//   -> remove non-comment parts of the macros
 'wVG:j!         -> go back to the mark, join together the lines without spaces
 dd't              -> dd the macro and go back the the beginning
+?^= regp        -> jump back to the label for the reg, put the macro
+k0ww"ryl          -> yank register name into r
+o"yyhh"rp"rdd   -> write out a macro to yank compile macro and put it in r
+@rk               -> call it and move back to the register
