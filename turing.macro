@@ -2,8 +2,11 @@
 " reg c = command
 " reg s = state
 
+
 = reg j (for jump to command)
 /^s\s\+{\_[^}]*(c)\_[^}]*}/(c)/ : ww
+
+=BEGIN
 
  -> jump to the state containing your command
  -> or fail if it doesn't exist
@@ -21,12 +24,67 @@
 /(c)  -> jump to command
 / : ww  -> jump to the first subexpression
 
+=END
+
+= reg r (read state machine commands)
+"wyewmp/^WRITE-CMDS\s(\_[^)]*w\_[^)]*)/wf:w"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*m\_[^)]*)/mf:w"my$`p"syE
+
+=BEGIN
+
+  -> Load part w (for write)
+
+  -> read the write cmd
+"wye               -> load command (temporarily) into reg w
+wmp                -> advance to next command, mark place
+
+  -> search for macro related to write-cmd
+/^WRITE-CMDS\s(    -> only look in the write cmds
+\_[^)]*w\_[^)]*  -> make sure the command occurs before any closing paren
+)                -> complete search
+/w             -> now find individual command
+
+  -> load cmd into w
+f:w"wy$            -> yank that macro (temporarily) into a
+G@w                -> go to the bottom, call temp w
+"wdd               -> finally load into w
+
+  -> load part m for motion
+`p                 -> return to where we left off
+"mye               -> load command (temporarily) into reg m
+wmp                -> advance to next command, mark place
+
+  -> search for macro related to motion-cmd
+/^MOTION-CMDS\s(   -> only look in the motion cmds
+\_[^)]*m\_[^)]*  -> make sure the command occurs before any closing paren
+)                -> complete search
+/m             -> now find individual command
+
+  -> now load the actual motion
+f:w"my$
+
+  -> load the state
+`p                 -> return to place
+"syE               -> load state
+
+=END
+
+WRITE-CMDS (
+  SKIP  : o0
+  WRITE : `pl"wyi"f"wmpGo0C"wEC
+  DEL   : odd
+)
+
+MOTION-CMDS (
+  UP  : k
+  DWN : j
+  HLD : 0
+)
 
 STATE {
-  (1) : SKIP    DWN STATE
-  (2) : WRITE 1 DWN STATE
-  (3) : DEL     HLD STATE
-  (5) : SKIP    HLD OTHER
+  (1) : SKIP                   DWN STATE
+  (2) : WRITE "Something else" DWN STATE
+  (3) : DEL                    HLD STATE
+  (5) : SKIP                   HLD OTHER
 }
 
 OTHER {
