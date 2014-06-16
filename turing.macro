@@ -2,6 +2,44 @@
 " reg c = command
 " reg s = state
 
+= reg d (for delay)
+VV
+
+=BEGIN
+
+VV  -> Flash visual mode on and off
+
+=END
+
+= reg t (for turing)
+OSTART0"syEdd@l
+
+=BEGIN
+  -> set state to START
+OSTART  -> write out the start state
+0"syE     -> load the start state in s
+dd        -> clean up
+
+  -> run the main loop
+@l
+=END
+
+= reg l (for loop)
+5000@d0"cy$l@j5000@d@rh5000@d@w@m
+0"cy$l@j@rh@w@m
+
+
+=BEGIN
+0"cy$     -> load the line into c
+l       -> go to the turing instructions
+@j        -> jump to command
+@r        -> read state machine commands
+h       -> go to the tape
+@w        -> write to the tape
+@m        -> execute the motion
+=END
+
+
 
 = reg j (for jump to command)
 /^s\s\+{\_[^}]*(c)\_[^}]*}/(c)/ : ww
@@ -44,7 +82,7 @@ wmp                -> advance to next command, mark place
 /w             -> now find individual command
 
   -> load cmd into w
-f:w"wy$            -> yank that macro (temporarily) into a
+f:w"wy$            -> yank that macro (temporarily) into w
 G@w                -> go to the bottom, call temp w
 "wdd               -> finally load into w
 
@@ -70,25 +108,48 @@ f:w"my$
 
 WRITE-CMDS (
   SKIP  : o0
-  WRITE : `pl"wyi"f"wmpGo0C"wEC
   DEL   : odd
+  WRITE : `pl"wyi"f"wmpGo0CECh"wp
+  INS   : `pl"wyi"f"wmpGooECh"wp
 )
 
 MOTION-CMDS (
-  UP  : k
-  DWN : j
-  HLD : 0
+  UP   : k@l
+  DWN  : j@l
+  HLD  : 0@l
+  STOP : 0
 )
 
 STATE {
-  (1) : SKIP                   DWN STATE
-  (2) : WRITE "Something else" DWN STATE
-  (3) : DEL                    HLD STATE
-  (5) : SKIP                   HLD OTHER
+  (1) : SKIP      DWN STATE
+  (2) : WRITE "1" DWN STATE
+  (3) : DEL       HLD STATE
+  (4) : SKIP      HLD OTHER
+}
+
+START {
+  ()(0)(1) : SKIP HLD SCAN-UP
+}
+
+ADD-1 {
+  (0) : WRITE "1" HLD DONE
+  (1) : WRITE "0" DWN ADD-1
+  ()  : SKIP      UP  INS-1
+}
+
+SCAN-UP {
+  (0)(1) : SKIP UP  SCAN-UP
+  ()     : SKIP DWN ADD-1
+}
+
+INS-1 {
+  ()(0)(1) : INS "1" HLD DONE
 }
 
 OTHER {
-  (4): INS 5 DWN DONE
+  (4) : INS "5" DWN DONE
 }
 
-DONE { }
+DONE {
+  ()(1)(2)(3)(4)(5) : SKIP STOP DONE
+}
