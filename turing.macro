@@ -25,7 +25,6 @@ dd        -> clean up
 =END
 
 = reg l (for loop)
-5000@d0"cy$l@j5000@d@rh5000@d@w@m
 0"cy$l@j@rh@w@m
 
 
@@ -63,7 +62,7 @@ dd        -> clean up
 =END
 
 = reg r (read state machine commands)
-"wyewmp/^WRITE-CMDS\s(\_[^)]*w\_[^)]*)/wf:w"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*m\_[^)]*)/mf:w"my$`p"syE
+"wyewmp/^WRITE-CMDS\s(\_[^)]*w.*\s:\s\+\zs\_[^)]*)"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*m.*\s:\s\+\zs\_[^)]*)"my$`p"syE
 
 =BEGIN
 
@@ -74,13 +73,17 @@ dd        -> clean up
 wmp                -> advance to next command, mark place
 
   -> search for macro related to write-cmd
-/^WRITE-CMDS\s(    -> only look in the write cmds
-\_[^)]*w\_[^)]*  -> make sure the command occurs before any closing paren
+/                  -> start search
+^WRITE-CMDS\s(     -> only look in the write cmds
+\_[^)]*            -> no closing parens
+w                -> the matching command
+.*\s:\s\+          -> the colon separating the commands
+\zs                -> begin match (so we jump after the colon
+\_[^)]*            -> make sure the command occurs before any closing paren
 )                -> complete search
-/w             -> now find individual command
 
   -> load cmd into w
-f:w"wy$            -> yank that macro (temporarily) into w
+"wy$               -> yank that macro (temporarily) into w
 G@w                -> go to the bottom, call temp w
 "wdd               -> finally load into w
 
@@ -90,13 +93,18 @@ G@w                -> go to the bottom, call temp w
 wmp                -> advance to next command, mark place
 
   -> search for macro related to motion-cmd
-/^MOTION-CMDS\s(   -> only look in the motion cmds
-\_[^)]*m\_[^)]*  -> make sure the command occurs before any closing paren
-)                -> complete search
-/m             -> now find individual command
+  -> (same comments as write-cmd above)
+/
+^MOTION-CMDS\s(
+\_[^)]*
+m
+.*\s:\s\+
+\zs
+\_[^)]*
+)
 
-  -> now load the actual motion
-f:w"my$
+  -> load the actual motion
+"my$
 
   -> load the state
 `p                 -> return to place
@@ -126,7 +134,7 @@ STATE {
 }
 
 START {
-  ()(0)(1) : SKIP HLD SCAN-UP
+  ()(0)(1) :   SKIP HLD SCAN-UP
 }
 
 ADD-1 {
