@@ -42,7 +42,7 @@ dd        -> clean up
 
 
 = reg j (for jump to command)
-/^s\s\+{\_[^}]*(c)\_[^}]*}/(c)/ : ww
+/^s\s\+{\_[^}]*(c).*\s:\s\+\zs\_[^}]*}
 
 =BEGIN
 
@@ -52,15 +52,13 @@ dd        -> clean up
 ^s\s\+{ -> line starting with [state] {
 \_[^}]*   -> no closing braces
 (c)     -> the command wrapped in parentheses
+.*\s:\s\+ -> the colon surrounded by white space
+          -> NOTE that we don't include new lines here
+          -> i.e. the colon has to occur on the same line
+\zs       -> start the match after the colon (so we jump right to it)
 \_[^}]*   -> no closing braces
 }         -> a closing brace starting a line
-        -> enter (to start the search)
-
- -> now we are know the bracketed group we are in contains
- -> so we are safe to jump to the specific command more
- -> niaively
-/(c)  -> jump to command
-/ : ww  -> jump to the first subexpression
+        -> enter (to execute the search)
 
 =END
 
