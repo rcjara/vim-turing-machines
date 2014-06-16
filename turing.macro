@@ -2,129 +2,156 @@
 " reg c = command
 " reg s = state
 
-= reg d (for delay)
-VV
+= reg i (for initialize)
+GoWRITE-CMDS ( ):%s/^WRITE-CMDS\s(\_[^)]\+)\_.//GoWRITE-CMDS (SKIP  : o0ECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wp)GoMOTION-CMDS ( ):%s/^MOTION-CMDS\s(\_[^)]\+)\_.//GoMOTION-CMDS (UP   : k@lDWN  : j@lHLD  : 0@lSTOP : 0)Go/^D2s\s\+{\_[^}]*(D2c).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"my$`p"syE"rddGo0"cy$EBl@j@rEBh@w@m"lddGoOSTARTEC0"syEdd@l"tdd
 
 =BEGIN
+  -> WRITE-CMD block
+     -> first write out an empty block
+GoWRITE-CMDS ( )
+     -> delete all write-cmd blocks
+:%s/             -> begin match over whole file
+^WRITE-CMDS\s(   -> beginning of block
+\_[^)]\+         -> any non-closing paren (including new lines)
+)\_.             -> closing block and new line
+//             -> substitue for nothing
+     -> write out the write-cmd group
+     -> all of the sub commands will themselves be yanked into reg w
+     -> there is double escaping going on whenever you see ^KVT
+        -> header
+GoWRITE-CMDS (
+        -> skip cmd
+SKIP  : o0EC        -> write out "0"
+        -> del cmd
+DEL   : oddEC       -> write out "dd"
+        -> write cmd
+WRITE : `p                -> header plus jump to mark p
+l"wyi"                    -> yank what is in quotes to reg w
+f"wmp                     -> go to the next instruction, mark place
+Go                        -> bottom of file begin writing
+0CVTECEC              -> write out a macro that replaces text with nothing
+h"wp                    -> alter the macro so it replaces text with reg w
+        -> ins cmd
+        -> comments moster same as write cmd above
+INS   : `p
+l"wyi"
+f"wmp
+Go
+oVTECEC               -> new line instead of replacing old line
+h"wp
+        -> close block
+)
 
-VV  -> Flash visual mode on and off
+  -> MOTION-CMD block
+     -> first write out an empty block
+GoMOTION-CMDS ( )
+     -> delete all write-cmd blocks
+:%s/             -> begin match over whole file
+^MOTION-CMDS\s(  -> beginning of block
+\_[^)]\+         -> any non-closing paren (including new lines)
+)\_.             -> closing block
+//             -> substitue for nothing
+     -> write out the motion-cmd group
+        -> header
+GoMOTION-CMDS (
+        -> up cmd
+UP   : k@l
+        -> down cmd
+DWN  : j@l
+        -> hold cmd
+HLD  : 0@l
+        -> stop cmd
+STOP : 0
+)
 
-=END
-
-= reg t (for turing)
-OSTART0"syEdd@l
-
-=BEGIN
-  -> set state to START
-OSTART  -> write out the start state
-0"syE     -> load the start state in s
-dd        -> clean up
-
-  -> run the main loop
-@l
-=END
-
-= reg l (for loop)
-0"cy$l@j@rh@w@m
-
-
-=BEGIN
-0"cy$     -> load the line into c
-l       -> go to the turing instructions
-@j        -> jump to command
-@r        -> read state machine commands
-h       -> go to the tape
-@w        -> write to the tape
-@m        -> execute the motion
-=END
+  -> MACRO J
+  -> jump to the state containing your command
+  -> or fail if it doesn't exist
+Go            -> begin writing
+/                -> start search
+^D2s\s\+{      -> line starting with [state] {
+\_[^}]*          -> no closing braces
+(D2c)          -> the command wrapped in parentheses
+.*\s:\s\+        -> the colon surrounded by white space
+                 -> NOTE that we don't include new lines here
+                 -> i.e. the colon has to occur on the same line
+\zs              -> start the match after the colon (so we jump right to it)
+\_[^}]*          -> no closing braces
+}                -> a closing brace starting a line
+CR             -> enter (to execute the search)
+"jdd        -> finish writing and load macro
 
 
-
-= reg j (for jump to command)
-/^s\s\+{\_[^}]*(c).*\s:\s\+\zs\_[^}]*}
-
-=BEGIN
-
- -> jump to the state containing your command
- -> or fail if it doesn't exist
-/         -> start search
-^s\s\+{ -> line starting with [state] {
-\_[^}]*   -> no closing braces
-(c)     -> the command wrapped in parentheses
-.*\s:\s\+ -> the colon surrounded by white space
-          -> NOTE that we don't include new lines here
-          -> i.e. the colon has to occur on the same line
-\zs       -> start the match after the colon (so we jump right to it)
-\_[^}]*   -> no closing braces
-}         -> a closing brace starting a line
-        -> enter (to execute the search)
-
-=END
-
-= reg r (read state machine commands)
-"wyewmp/^WRITE-CMDS\s(\_[^)]*w.*\s:\s\+\zs\_[^)]*)"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*m.*\s:\s\+\zs\_[^)]*)"my$`p"syE
-
-=BEGIN
-
+  -> MACRO R
   -> Load part w (for write)
 
+Go            -> begin writing
   -> read the write cmd
-"wye               -> load command (temporarily) into reg w
-wmp                -> advance to next command, mark place
+"wye             -> load command (temporarily) into reg w
+wmp              -> advance to next command, mark place
 
   -> search for macro related to write-cmd
-/                  -> start search
-^WRITE-CMDS\s(     -> only look in the write cmds
-\_[^)]*            -> no closing parens
-w                -> the matching command
-.*\s:\s\+          -> the colon separating the commands
-\zs                -> begin match (so we jump after the colon
-\_[^)]*            -> make sure the command occurs before any closing paren
-)                -> complete search
+/                -> start search
+^WRITE-CMDS\s(   -> only look in the write cmds
+\_[^)]*          -> no closing parens
+D2w            -> the matching command
+.*\s:\s\+        -> the colon separating the commands
+\zs              -> begin match (so we jump after the colon
+\_[^)]*          -> make sure the command occurs before any closing paren
+)CR            -> complete search
 
   -> load cmd into w
-"wy$               -> yank that macro (temporarily) into w
-G@w                -> go to the bottom, call temp w
-"wdd               -> finally load into w
+"wy$             -> yank that macro (temporarily) into w
+G@w              -> go to the bottom, call temp w
+"wdd             -> finally load into w
 
   -> load part m for motion
-`p                 -> return to where we left off
-"mye               -> load command (temporarily) into reg m
-wmp                -> advance to next command, mark place
+`p               -> return to where we left off
+"mye             -> load command (temporarily) into reg m
+wmp              -> advance to next command, mark place
 
   -> search for macro related to motion-cmd
   -> (same comments as write-cmd above)
 /
 ^MOTION-CMDS\s(
 \_[^)]*
-m
+D2m
 .*\s:\s\+
 \zs
 \_[^)]*
-)
+)CR
 
   -> load the actual motion
 "my$
 
   -> load the state
-`p                 -> return to place
-"syE               -> load state
+`p               -> return to place
+"syE             -> load state
+
+"rdd        -> finish writing and load macro
+
+  -> MACRO L
+  -> the main loop of the interpreter
+Go            -> begin writing
+0"cy$            -> load the line into c
+EBl            -> go to the turing instructions
+@j               -> jump to command
+@r               -> read state machine commands
+EBh            -> go to the tape
+@w               -> write to the tape
+@m               -> execute the motion
+"ldd        -> finish writing and load macro
+
+  -> MACRO T
+  -> set the inital state and call the main loop
+Go            -> begin writing
+OSTARTEC       -> write out the start state
+0"syE            -> load the start state in s
+dd               -> clean up
+@l               -> run the main loop
+"tdd        -> finish writing and load macro
 
 =END
-
-WRITE-CMDS (
-  SKIP  : o0
-  DEL   : odd
-  WRITE : `pl"wyi"f"wmpGo0CECh"wp
-  INS   : `pl"wyi"f"wmpGooECh"wp
-)
-
-MOTION-CMDS (
-  UP   : k@l
-  DWN  : j@l
-  HLD  : 0@l
-  STOP : 0
-)
 
 STATE {
   (1) : SKIP      DWN STATE
@@ -159,3 +186,17 @@ OTHER {
 DONE {
   ()(1)(2)(3)(4)(5) : SKIP STOP DONE
 }
+
+WRITE-CMDS (
+SKIP  : o0
+DEL   : odd
+WRITE : `pl"wyi"f"wmpGo0CECh"wp
+INS   : `pl"wyi"f"wmpGooECh"wp
+)
+
+MOTION-CMDS (
+UP   : k@l
+DWN  : j@l
+HLD  : 0@l
+STOP : 0
+)
