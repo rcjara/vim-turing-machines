@@ -1,0 +1,33 @@
+STATE {
+  (1) : SKIP      DWN STATE
+  (2) : WRITE "1" DWN STATE
+  (3) : DEL       HLD STATE
+  (4) : SKIP      HLD OTHER
+}
+
+START {
+  ()(0)(1) :   SKIP HLD SCAN-UP
+}
+
+ADD-1 {
+  (0) : WRITE "1" HLD DONE
+  (1) : WRITE "0" DWN ADD-1
+  ()  : SKIP      UP  INS-1
+}
+
+SCAN-UP {
+  (0)(1) : SKIP UP  SCAN-UP
+  ()     : SKIP DWN ADD-1
+}
+
+INS-1 {
+  ()(0)(1) : INS "1" HLD DONE
+}
+
+OTHER {
+  (4) : INS "5" DWN DONE
+}
+
+DONE {
+  ()(1)(2)(3)(4)(5) : SKIP STOP DONE
+}
