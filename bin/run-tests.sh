@@ -3,24 +3,8 @@
 set -e
 set -o pipefail
 
-INTERPRETER="turing.macro"
-SETUP_MACRO_LINE_NUM="6"
-
-function available_tests {
-  test_matches="$1"
-  find tests -mindepth 1 -type d \
-    | grep "${test_matches}"
-}
-
-function end_state_from_initial {
-  initial_state="$1"
-  echo $initial_state | sed 's/\/initial/\/end/'
-}
-
-function expected_state_from_initial {
-  initial_state="$1"
-  echo $initial_state | sed 's/\/initial/\/expected/'
-}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+source "${DIR}/bin/shared.sh"
 
 function run_machine_with_state {
   turing_machine="$1"
@@ -44,12 +28,17 @@ function run_machine_with_state {
 test_matches="$1"
 
 for dir in $(available_tests "${test_matches}"); do
-  turing_machine="$(find ${dir} -name "*.turing")"
+  turing_machine=$(turing_machine_in_dir $dir)
   states="$(find ${dir} -name "initial-*.state")"
   for initial_state in $states; do
     run_machine_with_state ${turing_machine} ${initial_state}
     expected_state=$(expected_state_from_initial $initial_state)
     end_state=$(end_state_from_initial $initial_state)
-    diff $expected_state $end_state
+    diff=$(diff $expected_state $end_state)
+
+    if [ "$diff" != "" ]; then
+      echo "$initial_state: "
+      echo "$diff"
+    fi
   done
 done

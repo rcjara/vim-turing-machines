@@ -1,0 +1,132 @@
+START {
+  ()     : SKIP DWN READ-NUM1
+  (0)(1) : SKIP UP SCAN-UP-FOR-NUM1
+}
+
+SCAN-UP-FOR-NUM1 {
+  ()     : SKIP DWN SCAN-DWN-FOR-NUM1
+  (0)(1) : SKIP UP SCAN-UP-FOR-NUM1
+}
+
+SCAN-DWN-FOR-NUM1 {
+  ()     : SKIP DWN SCAN-DWN-FOR-NUM1
+  (0)(1) : SKIP HLD READ-NUM1
+}
+
+READ-NUM1 {
+  () : SKIP DWN NO-NUM1
+  (0) : DEL HLD SCAN-FOR-NUM2-0
+  (1) : DEL HLD SCAN-FOR-NUM2-1
+}
+
+NO-NUM1 {
+  () : DEL UP CLEAN-ONCE
+  (0)(1) : SKIP HLD READ-NUM2-0
+}
+
+CLEAN-ONCE {
+  () : DEL HLD FINAL-CARRY
+}
+
+FINAL-CARRY {
+  ()     : SKIP STOP DONE
+  (0)(1) : SKIP DWN FINAL-CARRY
+  (c)    : WRITE "1" DWN FINAL-CARRY
+}
+
+
+CLEAN-AGAIN {
+  () : DEL UP DONE
+}
+
+SCAN-FOR-NUM2-0 {
+  ()  : SKIP DWN READ-NUM2-0
+  (0) : SKIP DWN SCAN-FOR-NUM2-0
+  (1) : SKIP DWN SCAN-FOR-NUM2-0
+}
+
+SCAN-FOR-NUM2-1 {
+  ()  : SKIP DWN READ-NUM2-1
+  (0) : SKIP DWN SCAN-FOR-NUM2-1
+  (1) : SKIP DWN SCAN-FOR-NUM2-1
+}
+
+READ-NUM2-0 {
+  ()  : SKIP HLD SCAN-TO-FIRST-EMPTY-0
+  (0) : DEL  HLD SCAN-TO-FIRST-EMPTY-0
+  (1) : DEL  HLD SCAN-TO-FIRST-EMPTY-1
+}
+
+READ-NUM2-1 {
+  ()  : SKIP HLD SCAN-TO-FIRST-EMPTY-1
+  (0) : DEL  HLD SCAN-TO-FIRST-EMPTY-1
+  (1) : DEL  HLD SCAN-TO-FIRST-EMPTY-c
+}
+
+SCAN-TO-FIRST-EMPTY-0 {
+  ()        : SKIP DWN SCAN-TO-END-0
+  (0)(1)(c) : SKIP DWN SCAN-TO-FIRST-EMPTY-0
+}
+
+SCAN-TO-FIRST-EMPTY-1 {
+  ()        : SKIP DWN SCAN-TO-END-1
+  (0)(1)(c) : SKIP DWN SCAN-TO-FIRST-EMPTY-1
+}
+
+SCAN-TO-FIRST-EMPTY-c {
+  ()        : SKIP DWN SCAN-TO-END-c
+  (0)(1)(c) : SKIP DWN SCAN-TO-FIRST-EMPTY-c
+}
+
+SCAN-TO-END-0 {
+  ()     : SKIP UP WRITE-0
+  (0)(1)(c) : SKIP DWN SCAN-TO-END-0
+}
+
+SCAN-TO-END-1 {
+  ()     : SKIP UP WRITE-1
+  (0)(1)(c) : SKIP DWN SCAN-TO-END-1
+}
+
+SCAN-TO-END-c {
+  ()     : SKIP UP WRITE-c
+  (0)(1)(c) : SKIP DWN SCAN-TO-END-c
+}
+
+WRITE-0 {
+  ()(0)(1) : INS "0" HLD SCAN-UP-1
+  (c)      : WRITE "1" HLD SCAN-UP-1
+}
+
+WRITE-1 {
+  ()(0)(1) : INS   "1" HLD SCAN-UP-1
+  (c)      : WRITE "0" HLD CARRY
+}
+
+WRITE-c {
+  ()(0)(1) : INS   "c" HLD SCAN-UP-1
+  (c)      : WRITE "1" HLD CARRY
+}
+
+CARRY {
+  ()(0)(1) : INS "c" HLD SCAN-UP-1
+}
+
+SCAN-UP-1 {
+  () : SKIP UP SCAN-UP-2
+  (0)(1)(c) : SKIP UP SCAN-UP-1
+}
+
+SCAN-UP-2 {
+  () : SKIP UP SCAN-UP-3
+  (0)(1)(c) : SKIP UP SCAN-UP-2
+}
+
+SCAN-UP-3 {
+  () : SKIP HLD START
+  (0)(1)(c) : SKIP UP SCAN-UP-3
+}
+
+DONE {
+  () : SKIP STOP DONE
+}
