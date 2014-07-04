@@ -12,8 +12,8 @@ function run_machine_with_state {
   end_state="$(end_state_from_initial $initial_state)"
 
   vi \
-    -O2 +${SETUP_MACRO_LINE_NUM} \
-    "+normal \"iyy" \
+    -O2 "+/${INITIALIZE_MACRO_HEADING}" \
+    "+normal j\"iyy" \
     "+q" \
     "+normal @i" \
     "+vsplit ${initial_state}" \

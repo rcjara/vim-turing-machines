@@ -11,8 +11,8 @@ function open_machine_with_state {
   initial_state="$2"
 
   vi \
-    -O2 +${SETUP_MACRO_LINE_NUM} \
-    "+normal \"iyy" \
+    -O2 "+/${INITIALIZE_MACRO_HEADING}" \
+    "+normal j\"iyy" \
     "+q" \
     "+normal @i" \
     "+vsplit ${initial_state}" \

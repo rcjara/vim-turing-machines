@@ -2,7 +2,10 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 INTERPRETER="${DIR}/turing.macro"
-SETUP_MACRO_LINE_NUM="6"
+TOOLS="${DIR}/tools.macro"
+
+INITIALIZE_MACRO_HEADING="^= reg i"
+COMPILE_MACRO_HEADING="^= reg k"
 
 function available_tests {
   test_matches="$1"
