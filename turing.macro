@@ -3,7 +3,7 @@
 " reg s = state
 
 = reg i (for initialize)
-GoWRITE-CMDS ( ):%s/^WRITE-CMDS\s(\_[^)]\+)\_.//GoWRITE-CMDS (SKIP  : o0ECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wp)GoMOTION-CMDS ( ):%s/^MOTION-CMDS\s(\_[^)]\+)\_.//GoMOTION-CMDS (UP   : k@lDWN  : j@lHLD  : 0@lSTOP : 0)Go/^D2s\s\+{\_[^}]*(D2c).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"my$`p"syE"rddGo0"cy$EBl@j@rEBh@w@m"lddGoOSTARTEC0"syEdd@l"tdd
+GoWRITE-CMDS ( ):%s/^WRITE-CMDS\s(\_[^)]\+)\_.//GoWRITE-CMDS (SKIP  : o0ECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wp)GoMOTION-CMDS ( ):%s/^MOTION-CMDS\s(\_[^)]\+)\_.//GoMOTION-CMDS (UP   : k@lDWN  : j@lHLD  : 0@lSTOP : 0)Go/^D2s\s\+{\_[^}]\{-}\((\*)\|(D2c)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"my$`p"syE"rddGo0"cy$EBl@j@rEBh@w@m"lddGoOSTARTEC0"syEdd@l"tdd
 
 =BEGIN
   -> WRITE-CMD block
@@ -70,8 +70,12 @@ STOP : 0
 Go            -> begin writing
 /                -> start search
 ^D2s\s\+{      -> line starting with [state] {
-\_[^}]*          -> no closing braces
-(D2c)          -> the command wrapped in parentheses
+\_[^}]\{-}       -> as few as possible characters excluding '}'
+\(               -> begin a sub match of either...
+(\*)                -> a splat wrapped in parentheses
+\|                  -> or
+(D2c)             -> the command wrapped in parentheses
+\)               -> end submatch
 .*\s:\s\+        -> the colon surrounded by white space
                  -> NOTE that we don't include new lines here
                  -> i.e. the colon has to occur on the same line
