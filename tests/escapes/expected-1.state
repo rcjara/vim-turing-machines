@@ -1,7 +1,18 @@
 
 * ok
+: ok
+\ ok
+( ok
+) ok
+{ ok
+^ ok
+. ok
+[ ok
+] ok
+/ ok
+$ ok
 (1 ok
 1 ok
-\ ok
 \* ok
+^\(*){:.[]/$ ok
 

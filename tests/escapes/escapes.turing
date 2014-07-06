@@ -6,30 +6,88 @@ scan-up {
   ()  : SKIP DWN test-splat
   (*) : SKIP UP  scan-up
 }
-
 test-splat {
-  (\*) : WRITE "* ok"   DWN test-paren-1
-  (*)  : WRITE "* fail" DWN test-paren-1
+  (\*) : WRITE "* ok"   DWN test-colon
+  (*)  : WRITE "* fail" DWN test-colon
 }
-
-test-paren-1 {
-  (1)   : WRITE "(1 fail - thought it was a 1" DWN test-paren-2
-  (\(1) : WRITE "(1 ok"   DWN test-paren-2
-  (*)   : WRITE "(1 fail" DWN test-paren-2
+test-colon {
+  (\:) : WRITE ": ok"   DWN test-escape
+  (*)  : WRITE ": fail" DWN test-escape
 }
-
-test-paren-2 {
-  (\(1) : WRITE "1 fail - thought it was (1" DWN test-escape
-  (1)   : WRITE "1 ok"   DWN test-escape
-  (*)   : WRITE "1 fail" DWN test-escape
-}
-
 test-escape {
-  (\\) : WRITE "\ ok"   DWN test-escape-splat
-  (*)  : WRITE "\ fail" DWN test-escape-splat
+  (\\) : WRITE "\ ok"   DWN test-open-paren
+  (*)  : WRITE "\ fail" DWN test-open-paren
+}
+test-open-paren {
+  (\() : WRITE "( ok"   DWN test-close-paren
+  (*)  : WRITE "( fail" DWN test-close-paren
+}
+test-close-paren {
+  (\)) : WRITE ") ok"   DWN test-open-brace
+  (*)  : WRITE ") fail" DWN test-open-brace
+}
+test-open-brace {
+  (\{) : WRITE "{ ok"   DWN test-caret
+  (*)  : WRITE "{ fail" DWN test-caret
+}
+
+test-caret {
+  (^) : WRITE "^ ok"   DWN test-period
+  (*) : WRITE "^ fail" DWN test-period
+}
+test-period {
+  (.) : WRITE ". ok"   DWN test-open-bracket
+  (*) : WRITE ". fail" DWN test-open-bracket
+}
+test-open-bracket {
+  ([) : WRITE "[ ok"   DWN test-close-bracket
+  (*) : WRITE "[ fail" DWN test-close-bracket
+}
+test-close-bracket {
+  (]) : WRITE "] ok"   DWN test-forward-slash
+  (*) : WRITE "] fail" DWN test-forward-slash
+}
+
+test-forward-slash {
+  (/) : WRITE "/ ok"   DWN test-money
+  (*) : WRITE "/ fail" DWN test-money
+}
+
+test-money {
+  ($) : WRITE "$ ok"   DWN test-paren-with-1
+  (*) : WRITE "$ fail" DWN test-paren-with-1
+}
+
+test-paren-with-1 {
+  (\(1) : WRITE "(1 ok"   DWN test-1-without-paren
+  (*)   : WRITE "(1 fail" DWN test-1-without-paren
+}
+
+test-1-without-paren {
+  (1) : WRITE "1 ok"   DWN test-escape-splat
+  (*) : WRITE "1 fail" DWN test-escape-splat
 }
 
 test-escape-splat {
-  (\\\*) : WRITE "\* ok"   STOP
-  (*)    : WRITE "\* fail" STOP
+  (\\\*) : WRITE "\* ok"   DWN test-all-the-chars
+  (*)  : WRITE "\* fail" DWN test-all-the-chars
 }
+
+test-all-the-chars {
+  (^\\\(\*\)\{\:.[]/$) : WRITE "^\(*){:.[]/$ ok" STOP
+  (*) : WRITE "^\(*){:.[]/$ fail" STOP
+}
+
+WRITE-CMDS (
+SKIP  : o0
+DEL   : odd
+WRITE : `pl"wyi"f"wmpGo0CECh"wp
+INS   : `pl"wyi"f"wmpGooECh"wp
+)
+
+MOTION-CMDS (
+UP   : k@l
+DWN  : j@l
+HLD  : 0@l
+STOP : 0
+)
