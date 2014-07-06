@@ -34,11 +34,9 @@ for dir in $(available_tests "${test_matches}"); do
     run_machine_with_state ${turing_machine} ${initial_state}
     expected_state=$(expected_state_from_initial $initial_state)
     end_state=$(end_state_from_initial $initial_state)
-    diff=$(diff $expected_state $end_state)
 
-    if [ "$diff" != "" ]; then
-      echo "$initial_state: "
-      echo "$diff"
-    fi
+    set +e
+    colordiff --context=3 $expected_state $end_state
+    set -e
   done
 done
