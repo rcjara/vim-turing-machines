@@ -1,0 +1,35 @@
+START {
+  (*) : SKIP DWN scan-up
+}
+
+scan-up {
+  ()  : SKIP DWN test-splat
+  (*) : SKIP UP  scan-up
+}
+
+test-splat {
+  (\*) : WRITE "* ok"   DWN test-paren-1
+  (*)  : WRITE "* fail" DWN test-paren-1
+}
+
+test-paren-1 {
+  (1)   : WRITE "(1 fail - thought it was a 1" DWN test-paren-2
+  (\(1) : WRITE "(1 ok"   DWN test-paren-2
+  (*)   : WRITE "(1 fail" DWN test-paren-2
+}
+
+test-paren-2 {
+  (\(1) : WRITE "1 fail - thought it was (1" DWN test-escape
+  (1)   : WRITE "1 ok"   DWN test-escape
+  (*)   : WRITE "1 fail" DWN test-escape
+}
+
+test-escape {
+  (\\) : WRITE "\ ok"   DWN test-escape-splat
+  (*)  : WRITE "\ fail" DWN test-escape-splat
+}
+
+test-escape-splat {
+  (\\\*) : WRITE "\* ok"   STOP
+  (*)    : WRITE "\* fail" STOP
+}

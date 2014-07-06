@@ -27,6 +27,8 @@ function run_machine_with_state {
 
 test_matches="$1"
 
+available_tests ${test_matches}
+
 for dir in $(available_tests "${test_matches}"); do
   turing_machine=$(turing_machine_in_dir $dir)
   states="$(find ${dir} -name "initial-*.state")"
