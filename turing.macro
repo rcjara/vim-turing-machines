@@ -3,7 +3,7 @@
 " reg s = state
 
 = reg i (for initialize)
-GoWRITE-CMDS ( ):%s/^WRITE-CMDS\s(\_[^)]\+)\_.//GoWRITE-CMDS (SKIP  : o0ECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wp)GoMOTION-CMDS ( ):%s/^MOTION-CMDS\s(\_[^)]\+)\_.//GoMOTION-CMDS (UP   : k@lDWN  : j@lHLD  : 0@lSTOP : 0)Go/^D2s\s\+{\_[^}]\{-}\((\*)\|(D2c)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"my$`p"syE"rddGo0"cy$EBl@j@rEBh@w@m"lddGoOSTARTEC0"syEdd@l"tdd
+GoWRITE-CMDS ( ):%s/^WRITE-CMDS\s(\_[^)]\+)\_.//GoWRITE-CMDS (SKIP  : o0ECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wp)GoMOTION-CMDS ( ):%s/^MOTION-CMDS\s(\_[^)]\+)\_.//GoMOTION-CMDS (UP   : k@lDWN  : j@lHLD  : 0@lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\((\*)\|(D2c)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"my$`p"syE"rddGo0"cy$EBl@e@j@rEBh@w@m"lddGoOSTARTEC0"syEdd@l"tdd
 
 =BEGIN
   -> WRITE-CMD block
@@ -63,6 +63,41 @@ HLD  : 0@l
         -> stop cmd
 STOP : 0
 )
+
+  -> MACRO E
+  -> escape the command that has been read from the tape
+  -> We need to escape the triple escapes first, so that all
+  -> the other escapes don't keep getting re-escaped
+  -> Characters that should have triple escapes: *\
+  -> Characters that should have double escapes: (){:
+  -> Characters that should have single escapes: .[]/^$
+Go            -> begin writing the macro
+GoEC           -> insert an empty line at the end of the file
+"cp              -> put out the command
+                 -> escape the triple escape characters
+I*EC              -> insert a * at the beginning of the line
+:s/
+\([*\\]\)           -> look for special characters
+/\\\\\\\1/g         -> put two slashes in front of any matches
+CR
+0xxxx               -> delete the '///*' (now) at the beginning of the line
+                 -> escape the double escape characters
+I(EC              -> insert a paren at the beginning of the line
+:s/
+\([(){]\)           -> look for special characters
+/\\\\\1/g           -> put two slashes in front of any matches
+CR
+0xxx                -> delete the '//(' (now) at the beginning of the line
+                 -> escape the single escape characters
+I.EC              -> insert a '.' at the beginning of the line
+:s/
+\([.[\]/^$]\)       -> look for special characters
+/\\\1/g             -> put a slash in front of any matches
+CR                -> execute the search
+0xx                 -> delete the '\.' (now) at the beginning of the line
+"cd$             -> yank the line into reg c
+dd               -> remove the extra line we've added
+"edd        -> finish writing and load macro
 
   -> MACRO J
   -> jump to the state containing your command
@@ -139,6 +174,7 @@ wmp              -> advance to next command, mark place
 Go            -> begin writing
 0"cy$            -> load the line into c
 EBl            -> go to the turing instructions
+@e               -> escape the command before escape
 @j               -> jump to command
 @r               -> read state machine commands
 EBh            -> go to the tape
