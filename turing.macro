@@ -9,7 +9,7 @@
     -> reg s = state
 
 = reg i (for initialize)
-GoWRITE-CMDS ( ):%s/^WRITE-CMDS\s(\_[^)]\+)\_.//GoWRITE-CMDS (SKIP  : o0ECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wp)GoMOTION-CMDS ( ):%s/^MOTION-CMDS\s(\_[^)]\+)\_.//GoMOTION-CMDS (UP   : k@lDWN  : j@lHLD  : 0@lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"my$`p"syE"rddGo0"cy$EBl@e@j@rEBh@w@m"lddGoOSTARTEC0"syEdd@l"tdd
+GoWRITE-CMDS ( ):%s/\n*WRITE-CMDS\s(\_[^)]\+)//GoWRITE-CMDS (SKIP  : o0ECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wp)GoMOTION-CMDS ( ):%s/\n*MOTION-CMDS\s(\_[^)]\+)//GoMOTION-CMDS (UP   : k@lDWN  : j@lHLD  : 0@lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"myewmp/^MOTION-CMDS\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"my$`p"syE"rddGo0"cy$EBl@e@j@rEBh@w@m"lddGoOSTARTEC0"syEdd@l"tdd
 
 =BEGIN
   -> WRITE-CMD block
@@ -17,9 +17,9 @@ GoWRITE-CMDS ( ):%s/^WRITE-CMDS\s(\_[^)]\+)\_.//GoWRITE-CMDS (SKIP  : o0ECD
 GoWRITE-CMDS ( )
      -> delete all write-cmd blocks
 :%s/             -> begin match over whole file
-^WRITE-CMDS\s(   -> beginning of block
+\n*WRITE-CMDS\s( -> beginning of block + any number of empty lines ahead of it
 \_[^)]\+         -> any non-closing paren (including new lines)
-)\_.             -> closing block and new line
+)                -> closing block and new line
 //             -> substitue for nothing
      -> write out the write-cmd group
      -> all of the sub commands will themselves be yanked into reg w
@@ -52,11 +52,11 @@ h"wp
      -> first write out an empty block
 GoMOTION-CMDS ( )
      -> delete all write-cmd blocks
-:%s/             -> begin match over whole file
-^MOTION-CMDS\s(  -> beginning of block
-\_[^)]\+         -> any non-closing paren (including new lines)
-)\_.             -> closing block
-//             -> substitue for nothing
+:%s/              -> begin match over whole file
+\n*MOTION-CMDS\s( -> beginning of block
+\_[^)]\+          -> any non-closing paren (including new lines)
+)                 -> closing block
+//              -> substitue for nothing
      -> write out the motion-cmd group
         -> header
 GoMOTION-CMDS (
