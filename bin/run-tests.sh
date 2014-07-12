@@ -33,11 +33,11 @@ for dir in $(available_tests "${test_matches}"); do
   turing_machine=$(turing_machine_in_dir $dir)
   states="$(find ${dir} -name "initial-*.state")"
   for initial_state in $states; do
+    set +e
     run_machine_with_state ${turing_machine} ${initial_state}
     expected_state=$(expected_state_from_initial $initial_state)
     end_state=$(end_state_from_initial $initial_state)
 
-    set +e
     colordiff --context=3 $expected_state $end_state
     set -e
   done
