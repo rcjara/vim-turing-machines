@@ -16,6 +16,7 @@
     -> j = [j]ump to command (in the .turing file)
     -> r = [r]ead command (in the .turing file
     -> l = [l]oop
+    -> u = load the read command into [y] based on [m] ([u] is next to [y])
 
  -> Variable Macros:
     -> y = [y]ank command (used to read the state, set by [m]ode)
@@ -23,7 +24,7 @@
     -> w = [w]rite command
 
 = reg i (for initialize)
-GoREAD-MODE ( ):%s/\n*READ-MODE\s(\_[^)]\+)//GoREAD-MODE (LINE : 0"cy$CHAR : "cyl)GoWRITE-CMDS-LINE ( ):%s/\n*WRITE-CMDS\S\+\s(\_[^)]\+)//GoWRITE-CMDS-LINE (SKIP  : oECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wpMODE  : `p"myEWmp/^READ-MODE\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"yy$GoEC)GoWRITE-CMDS-CHAR (SKIP  : oECDEL   : oxECWRITE : `pl"wyi"f"wmpGo0clVTECECh"wpINS   : `pl"wyi"f"wmpGoaVTECECh"wpMODE  : `p"myEWmp/^READ-MODE\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"yy$GoEC)GoMOTION-CMDS-LINE ( ):%s/\n*MOTION-CMDS\S\+\s(\_[^)]\+)//GoMOTION-CMDS-LINE (UP   : k@lDWN  : j@lHLD  : @lSTOP : 0)GoMOTION-CMDS-CHAR (UP   : k@lDWN  : j@lLFT  : h@lRGT  : l@lHLD  : @lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS-D2m\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"ayewmp/^MOTION-CMDS-D2m\s(\_[^)]*D2a.*\s:\s\+\zs\_[^)]*)CR"ay$`p"syE"rddGo@yEBl@e@j@rEBh@w@a"lddGompOEC0d$iSTARTEC0"sdEiLINEEC0"md$i0"cy$EC0"yd$dd`p@l"tdd
+GoREAD-MODE ( ):%s/\n*READ-MODE\s(\_[^)]\+)//GoREAD-MODE (LINE : 0"cy$CHAR : "cyl)GoWRITE-CMDS-LINE ( ):%s/\n*WRITE-CMDS\S\+\s(\_[^)]\+)//GoWRITE-CMDS-LINE (SKIP  : oECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wpMODE  : @u)GoWRITE-CMDS-CHAR (SKIP  : oECDEL   : oxECWRITE : `pl"wyi"f"wmpGo0clVTECECh"wpINS   : `pl"wyi"f"wmpGoaVTECECh"wpMODE  : @u)GoMOTION-CMDS-LINE ( ):%s/\n*MOTION-CMDS\S\+\s(\_[^)]\+)//GoMOTION-CMDS-LINE (UP   : k@lDWN  : j@lHLD  : @lSTOP : 0)GoMOTION-CMDS-CHAR (UP   : k@lDWN  : j@lLFT  : h@lRGT  : l@lHLD  : @lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS-D2m\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"ayewmp/^MOTION-CMDS-D2m\s(\_[^)]*D2a.*\s:\s\+\zs\_[^)]*)CR"ay$`p"syE"rddGo`p"myEWmp/^READ-MODE\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"yy$GoEC"uddGo@yEBl@e@j@rEBh@w@a"lddGompOEC0d$iSTARTEC0"sdEiLINEEC0"md$i0"cy$EC0"yd$dd`p@l"tdd
 
 =BEGIN
   -> read mode block
@@ -79,24 +80,8 @@ Go
 oVTECEC               -> new line instead of replacing old line
 h"wp
 
-        -> load new mode cmd
-MODE  : `p  -> header and return to p
-               -> load mode into [m]
-"myE            -> load into m
-Wmp               -> go to next instruction, mark place
-               -> load read mode
-                  -> jump to correct place
-/                    -> start search
-^READ-MODE           -> only look in the write cmds...
-\s(
-\_[^)]*              -> no closing parens
-D2m                -> the matching mode
-.*\s:\s\+            -> the colon separating the commands
-\zs                  -> begin match (so we jump after the colon
-\_[^)]*              -> make sure the command occurs before any closing paren
-)CR                -> complete search
-"yy$              -> load macro into y
-GoEC          -> write out a no-op
+        -> load new mode/[y]
+MODE  : @u
 
         -> close block
 )
@@ -124,24 +109,8 @@ Go
 aVTECEC               -> append text instead of replacing it
 h"wp
 
-        -> load new mode cmd
-MODE  : `p  -> header
-               -> load mode into [m]
-"myE              -> load into m
-Wmp               -> go to next instruction, mark place
-               -> load read mode
-                  -> jump to correct place
-/                    -> start search
-^READ-MODE           -> only look in the write cmds...
-\s(
-\_[^)]*              -> no closing parens
-D2m                -> the matching mode
-.*\s:\s\+            -> the colon separating the commands
-\zs                  -> begin match (so we jump after the colon
-\_[^)]*              -> make sure the command occurs before any closing paren
-)CR                -> complete search
-"yy$              -> load macro into y
-GoEC          -> write out a no-op
+        -> load new mode/[y]
+MODE  : @u
         -> close block
 )
 
@@ -285,6 +254,29 @@ wmp              -> advance to next command, mark place
 "syE             -> load state
 
 "rdd        -> finish writing and load macro
+
+  -> MACRO U
+  -> load mode into [m] and then populate [y]
+  -> highly coupled to implementation of [r]
+Go       -> begin writing
+            -> load mode into [m]
+`p             -> return to p
+"myE           -> load into m
+Wmp            -> go to next instruction, mark place
+            -> load read mode
+               -> jump to correct place
+/                 -> start search
+^READ-MODE        -> only look in the write cmds...
+\s(
+\_[^)]*           -> no closing parens
+D2m             -> the matching mode
+.*\s:\s\+         -> the colon separating the commands
+\zs               -> begin match (so we jump after the colon
+\_[^)]*           -> make sure the command occurs before any closing paren
+)CR             -> complete search
+"yy$        -> load macro into y
+GoEC      -> write out a no-op for [r] to read into [w]
+"udd   -> finish writing and load macro
 
   -> MACRO L
   -> the main loop of the interpreter
