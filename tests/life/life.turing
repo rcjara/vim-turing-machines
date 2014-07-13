@@ -1,0 +1,240 @@
+START {
+  (*) : MODE CHAR HLD scan-up
+}
+
+scan-up {
+  (-)(+) : SKIP HLD scan-left
+  (*)    : SKIP UP scan-up
+}
+
+scan-left {
+  (+)(|) : SKIP RGT down-1
+  (-)    : SKIP LFT scan-left
+}
+
+down-1 {
+  (-) : SKIP DWN begin-count
+}
+
+begin-count {
+  (.)(O) : SKIP UP cell-2-1-0
+  (|)    : SKIP LFT pre-newline-scan
+}
+
+-> go to beginning of a newline
+pre-newline-scan {
+  (*) : SKIP DWN newline-scan
+}
+
+newline-scan {
+  (|) : SKIP RGT begin-count
+  (-) : SKIP UP  return-to-top
+  (*) : SKIP LFT newline-scan
+}
+
+return-to-top {
+  (-) : SKIP DWN clean-newline-scan
+  (*) : SKIP UP  return-to-top
+}
+
+clean-newline-scan {
+  (|) : SKIP RGT clean
+  (-) : SKIP UP done
+  (*) : SKIP LFT clean-newline-scan
+}
+
+clean {
+  (0)(o) : WRITE "O" RGT clean
+  (/)(,) : WRITE "." RGT clean
+  (|) :    SKIP LFT pre-clean-newline-scan
+}
+
+pre-clean-newline-scan {
+  (*) : SKIP DWN clean-newline-scan
+}
+
+done {
+  (*) : SKIP STOP
+}
+
+-> directly above
+cell-2-1-0 {
+  (O)(0)(/) : SKIP RGT cell-3-1-1
+  (*)       : SKIP RGT cell-3-1-0
+}
+
+-> upper right
+cell-3-1-0 {
+  (O)(0)(/) : SKIP DWN cell-3-2-1
+  (*)       : SKIP DWN cell-3-2-0
+}
+
+cell-3-1-1 {
+  (O)(0)(/) : SKIP DWN cell-3-2-2
+  (*)       : SKIP DWN cell-3-2-1
+}
+
+-> directly to the right
+cell-3-2-0 {
+  (O)(0)(/) : SKIP DWN cell-3-3-1
+  (*)       : SKIP DWN cell-3-3-0
+}
+
+cell-3-2-1 {
+  (O)(0)(/) : SKIP DWN cell-3-3-2
+  (*)       : SKIP DWN cell-3-3-1
+}
+
+cell-3-2-2 {
+  (O)(0)(/) : SKIP DWN cell-3-3-3
+  (*)       : SKIP DWN cell-3-3-2
+}
+
+-> lower right
+cell-3-3-0 {
+  (O)(0)(/) : SKIP LFT cell-2-3-1
+  (*)       : SKIP LFT cell-2-3-0
+}
+
+cell-3-3-1 {
+  (O)(0)(/) : SKIP LFT cell-2-3-2
+  (*)       : SKIP LFT cell-2-3-1
+}
+
+cell-3-3-2 {
+  (O)(0)(/) : SKIP LFT cell-2-3-3
+  (*)       : SKIP LFT cell-2-3-2
+}
+
+cell-3-3-3 {
+  (O)(0)(/) : SKIP LFT cell-2-3-too-many
+  (*)       : SKIP LFT cell-2-3-3
+}
+
+-> directly below
+cell-2-3-0 {
+  (O)(0)(/) : SKIP LFT cell-1-3-1
+  (*)       : SKIP LFT cell-1-3-0
+}
+
+cell-2-3-1 {
+  (O)(0)(/) : SKIP LFT cell-1-3-2
+  (*)       : SKIP LFT cell-1-3-1
+}
+
+cell-2-3-2 {
+  (O)(0)(/) : SKIP LFT cell-1-3-3
+  (*)       : SKIP LFT cell-1-3-2
+}
+
+cell-2-3-3 {
+  (O)(0)(/) : SKIP UP  write-too-many
+  (*)       : SKIP LFT cell-1-3-3
+}
+
+cell-2-3-too-many {
+  (*)       : SKIP UP write-too-many
+}
+
+-> lower right
+cell-1-3-0 {
+  (O)(0)(/) : SKIP UP cell-1-2-1
+  (*)       : SKIP UP cell-1-2-0
+}
+
+cell-1-3-1 {
+  (O)(0)(/) : SKIP UP cell-1-2-2
+  (*)       : SKIP UP cell-1-2-1
+}
+
+cell-1-3-2 {
+  (O)(0)(/) : SKIP UP cell-1-2-3
+  (*)       : SKIP UP cell-1-2-2
+}
+
+cell-1-3-3 {
+  (O)(0)(/) : SKIP UP cell-1-2-too-many
+  (*)       : SKIP UP cell-1-2-3
+}
+
+-> directly left
+cell-1-2-0 {
+  (O)(0)(/) : SKIP UP cell-1-1-1
+  (*)       : SKIP UP cell-1-1-0
+}
+
+cell-1-2-1 {
+  (O)(0)(/) : SKIP UP cell-1-1-2
+  (*)       : SKIP UP cell-1-1-1
+}
+
+cell-1-2-2 {
+  (O)(0)(/) : SKIP UP cell-1-1-3
+  (*)       : SKIP UP cell-1-1-2
+}
+
+cell-1-2-3 {
+  (O)(0)(/) : SKIP RGT write-too-many
+  (*)       : SKIP UP  cell-1-1-3
+}
+
+cell-1-2-too-many {
+  (*)       : SKIP RGT write-too-many
+}
+
+-> upper-right
+cell-1-1-0 {
+  (O)(0)(/) : SKIP RGT return-too-few
+  (*)       : SKIP RGT return-too-few
+}
+
+cell-1-1-1 {
+  (O)(0)(/) : SKIP RGT return-2
+  (*)       : SKIP RGT return-too-few
+}
+
+cell-1-1-2 {
+  (O)(0)(/) : SKIP RGT return-3
+  (*)       : SKIP RGT return-2
+}
+
+cell-1-1-3 {
+  (O)(0)(/) : SKIP RGT return-too-many
+  (*)       : SKIP RGT return-3
+}
+
+return-too-few {
+  (*) : SKIP DWN write-too-few
+}
+
+return-2 {
+  (*) : SKIP DWN write-2
+}
+
+return-3 {
+  (*) : SKIP DWN write-3
+}
+
+return-too-many {
+  (*) : SKIP DWN write-too-many
+}
+
+write-too-few {
+  (.) : WRITE "," RGT begin-count
+  (O) : WRITE "/" RGT begin-count
+}
+
+write-2 {
+  (.) : WRITE "," RGT begin-count
+  (O) : WRITE "0" RGT begin-count
+}
+
+write-3 {
+  (.) : WRITE "o" RGT begin-count
+  (O) : WRITE "0" RGT begin-count
+}
+
+write-too-many {
+  (.) : WRITE "," RGT begin-count
+  (O) : WRITE "/" RGT begin-count
+}
