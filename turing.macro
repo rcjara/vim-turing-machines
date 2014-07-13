@@ -23,11 +23,28 @@
     -> w = [w]rite command
 
 = reg i (for initialize)
-GoWRITE-CMDS-LINE ( ):%s/\n*WRITE-CMDS\S\+\s(\_[^)]\+)//GoWRITE-CMDS-LINE (SKIP  : o0ECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wpMODE  : `p"myEWmpGoEC)GoMOTION-CMDS-LINE ( ):%s/\n*MOTION-CMDS\S\+\s(\_[^)]\+)//GoMOTION-CMDS-LINE (UP   : k@lDWN  : j@lHLD  : 0@lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS-D2m\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"ayewmp/^MOTION-CMDS-D2m\s(\_[^)]*D2a.*\s:\s\+\zs\_[^)]*)CR"ay$`p"syE"rddGo@yEBl@e@j@rEBh@w@a"lddGompOEC0d$iSTARTEC0"sdEiLINEEC0"md$i0"cy$EC0"yd$dd`p@l"tdd
+GoREAD-MODE ( ):%s/\n*READ-MODE\s(\_[^)]\+)//GoREAD-MODE (LINE : 0"cy$CHAR : "cyl)GoWRITE-CMDS-LINE ( ):%s/\n*WRITE-CMDS\S\+\s(\_[^)]\+)//GoWRITE-CMDS-LINE (SKIP  : oECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wpMODE  : `p"myEWmp/^READ-MODE\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"yy$GoEC)GoWRITE-CMDS-CHAR (SKIP  : oECDEL   : oxECWRITE : `pl"wyi"f"wmpGo0clVTECECh"wpINS   : `pl"wyi"f"wmpGoaVTECECh"wpMODE  : `p"myEWmp/^READ-MODE\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"yy$GoEC)GoMOTION-CMDS-LINE ( ):%s/\n*MOTION-CMDS\S\+\s(\_[^)]\+)//GoMOTION-CMDS-LINE (UP   : k@lDWN  : j@lHLD  : @lSTOP : 0)GoMOTION-CMDS-CHAR (UP   : k@lDWN  : j@lLFT  : h@lRGT  : l@lHLD  : @lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS-D2m\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"ayewmp/^MOTION-CMDS-D2m\s(\_[^)]*D2a.*\s:\s\+\zs\_[^)]*)CR"ay$`p"syE"rddGo@yEBl@e@j@rEBh@w@a"lddGompOEC0d$iSTARTEC0"sdEiLINEEC0"md$i0"cy$EC0"yd$dd`p@l"tdd
 
 =BEGIN
+  -> read mode block
+GoREAD-MODE ( )
+     -> delete all write-cmd blocks
+:%s/              -> begin match over whole file
+\n*               -> include empty lines ahead of block
+READ-MODE\s(      -> beginning of all write-cmd blocks
+\_[^)]\+          -> any non-closing paren (including new lines)
+)                 -> closing block and new line
+//              -> substitute with nothing
+     -> now write out the block
+GoREAD-MODE (
+LINE : 0"cy$
+CHAR : "cyl
+)
+
   -> WRITE-CMD blocks
   -> there are multiple blocks of the form "WRITE-CMD-{read/write [m]ode}"
+  -> the text behind the colons will be executed as a macro in the instruction
+  -> whatever line the macro leaves the cursor on will in turn be exectuted on the tape
   -> there is double escaping going on whenever you see ^KVT
 
      -> first write out an empty block
@@ -38,14 +55,14 @@ GoWRITE-CMDS-LINE ( )
 WRITE-CMDS\S\+\s( -> beginning of all write-cmd blocks
 \_[^)]\+          -> any non-closing paren (including new lines)
 )                 -> closing block and new line
-//              -> substitue for nothing
-     -> write out the write-cmd group
+//              -> substitute with nothing
+     -> write out the write-cmd-line group
         -> header
 GoWRITE-CMDS-LINE (
         -> skip cmd
-SKIP  : o0EC        -> write out "0"
+SKIP  : oEC           -> no-op
         -> del cmd
-DEL   : oddEC       -> write out "dd"
+DEL   : oddEC         -> dd
         -> write cmd
 WRITE : `p                -> header plus jump to mark p
 l"wyi"                    -> yank what is in quotes to reg w
@@ -63,16 +80,73 @@ oVTECEC               -> new line instead of replacing old line
 h"wp
 
         -> load new mode cmd
-MODE  : `p                -> header plus jupm to mark p
-"myE                      -> yank mode into m
-Wmp                       -> go to next instruction, mark place
-GoEC                  -> write out a no-op
+MODE  : `p  -> header and return to p
+               -> load mode into [m]
+"myE            -> load into m
+Wmp               -> go to next instruction, mark place
+               -> load read mode
+                  -> jump to correct place
+/                    -> start search
+^READ-MODE           -> only look in the write cmds...
+\s(
+\_[^)]*              -> no closing parens
+D2m                -> the matching mode
+.*\s:\s\+            -> the colon separating the commands
+\zs                  -> begin match (so we jump after the colon
+\_[^)]*              -> make sure the command occurs before any closing paren
+)CR                -> complete search
+"yy$              -> load macro into y
+GoEC          -> write out a no-op
+
+        -> close block
+)
+
+     -> write out the write-cmd-char group
+        -> header
+GoWRITE-CMDS-CHAR (
+        -> skip cmd
+SKIP  : oEC           -> write out a no-op
+        -> del cmd
+DEL   : oxEC          -> write out "x"
+        -> write cmd
+WRITE : `p                -> header plus jump to mark p
+l"wyi"                    -> yank what is in quotes to reg w
+f"wmp                     -> go to the next instruction, mark place
+Go                        -> bottom of file begin writing
+0clVTECEC             -> write out a macro that replaces one char with nothing
+h"wp                    -> alter the macro so it replaces text with reg w
+        -> ins cmd
+        -> comments moster same as write cmd above
+INS   : `p
+l"wyi"
+f"wmp
+Go
+aVTECEC               -> append text instead of replacing it
+h"wp
+
+        -> load new mode cmd
+MODE  : `p  -> header
+               -> load mode into [m]
+"myE              -> load into m
+Wmp               -> go to next instruction, mark place
+               -> load read mode
+                  -> jump to correct place
+/                    -> start search
+^READ-MODE           -> only look in the write cmds...
+\s(
+\_[^)]*              -> no closing parens
+D2m                -> the matching mode
+.*\s:\s\+            -> the colon separating the commands
+\zs                  -> begin match (so we jump after the colon
+\_[^)]*              -> make sure the command occurs before any closing paren
+)CR                -> complete search
+"yy$              -> load macro into y
+GoEC          -> write out a no-op
         -> close block
 )
 
   -> MOTION-CMD block
   -> there are multiple blocks of the form "MOTION-CMD-{read/write [m]ode}"
-  -> there is double escaping going on whenever you see ^KVT
      -> first write out an empty block
 GoMOTION-CMDS-LINE ( )
      -> delete all write-cmd blocks
@@ -82,17 +156,21 @@ GoMOTION-CMDS-LINE ( )
 MOTION-CMDS\S\+\s( -> beginning of block
 \_[^)]\+           -> any non-closing paren (including new lines)
 )                  -> closing block
-//               -> substitue for nothing
+//               -> substitute with nothing
      -> write out the motion-cmd-line group
-        -> header
 GoMOTION-CMDS-LINE (
-        -> up cmd
 UP   : k@l
-        -> down cmd
 DWN  : j@l
-        -> hold cmd
-HLD  : 0@l
-        -> stop cmd
+HLD  : @l
+STOP : 0
+)
+     -> write out the motion-cmd-char group
+GoMOTION-CMDS-CHAR (
+UP   : k@l
+DWN  : j@l
+LFT  : h@l
+RGT  : l@l
+HLD  : @l
 STOP : 0
 )
 

@@ -1,0 +1,43 @@
+START {
+ (*) : MODE CHAR HLD scan-left1
+}
+
+scan-left1 {
+  ( ) : SKIP RGT read-a
+  (*) : SKIP LFT scan-left1
+}
+
+read-a {
+  (a) : INS "a" RGT read-b
+  (*) : INS "fail a" STOP
+}
+
+read-b {
+  (b) : INS "b" RGT read-c
+  (*) : INS "fail b" STOP
+}
+
+read-c {
+  (c) : INS "c" DWN scan-left2
+  (*) : INS "fail c" STOP
+}
+
+scan-left2 {
+  ( ) : SKIP RGT read-d
+  (*) : SKIP LFT scan-left2
+}
+
+read-d {
+  (d) : INS "d" RGT read-e
+  (*) : INS "fail d" STOP
+}
+
+read-e {
+  (e) : INS "e" RGT read-f
+  (*) : INS "fail e" STOP
+}
+
+read-f {
+  (f) : INS "f" STOP
+  (*) : INS "fail f" STOP
+}
