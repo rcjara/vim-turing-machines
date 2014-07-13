@@ -15,16 +15,19 @@
     -> e = [e]scape the [c]ommand
     -> j = [j]ump to command (in the .turing file)
     -> r = [r]ead command (in the .turing file
+       -> read the [r]ead command may make use of the follow helper macros:
+       -> u = load the read command into [y] based on [m] ([u] is next to [y])
+       -> q = read [q]uoted text
     -> l = [l]oop
-    -> u = load the read command into [y] based on [m] ([u] is next to [y])
 
  -> Variable Macros:
+ -> macros which get overwritten during the course of running the turing interpreter
     -> y = [y]ank command (used to read the state, set by [m]ode)
     -> a = motion used to [a]dvance the tape
     -> w = [w]rite command
 
 = reg i (for initialize)
-GoREAD-MODE ( ):%s/\n*READ-MODE\s(\_[^)]\+)//GoREAD-MODE (LINE : 0"cy$CHAR : "cyl)GoWRITE-CMDS-LINE ( ):%s/\n*WRITE-CMDS\S\+\s(\_[^)]\+)//GoWRITE-CMDS-LINE (SKIP  : oECDEL   : oddECWRITE : `pl"wyi"f"wmpGo0CVTECECh"wpINS   : `pl"wyi"f"wmpGooVTECECh"wpMODE  : @u)GoWRITE-CMDS-CHAR (SKIP  : oECDEL   : oxECWRITE : `pl"wyi"f"wmpGo0clVTECECh"wpINS   : `pl"wyi"f"wmpGoaVTECECh"wpMODE  : @u)GoMOTION-CMDS-LINE ( ):%s/\n*MOTION-CMDS\S\+\s(\_[^)]\+)//GoMOTION-CMDS-LINE (UP   : k@lDWN  : j@lHLD  : @lSTOP : 0)GoMOTION-CMDS-CHAR (UP   : k@lDWN  : j@lLFT  : h@lRGT  : l@lHLD  : @lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS-D2m\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"ayewmp/^MOTION-CMDS-D2m\s(\_[^)]*D2a.*\s:\s\+\zs\_[^)]*)CR"ay$`p"syE"rddGo`p"myEWmp/^READ-MODE\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"yy$GoEC"uddGo@yEBl@e@j@rEBh@w@a"lddGompOEC0d$iSTARTEC0"sdEiLINEEC0"md$i0"cy$EC0"yd$dd`p@l"tdd
+GoREAD-MODE ( ):%s/\n*READ-MODE\s(\_[^)]\+)//GoREAD-MODE (LINE : 0"cy$CHAR : "cyl)GoWRITE-CMDS-LINE ( ):%s/\n*WRITE-CMDS\S\+\s(\_[^)]\+)//GoWRITE-CMDS-LINE (SKIP  : oECDEL   : oddECWRITE : @q0c$ECINS   : @qoEC-> load new mode/[y]MODE  : @u)GoWRITE-CMDS-CHAR (SKIP  : oECDEL   : oxECWRITE : @qclECINS   : @qaECMODE  : @u)GoMOTION-CMDS-LINE ( ):%s/\n*MOTION-CMDS\S\+\s(\_[^)]\+)//GoMOTION-CMDS-LINE (UP   : k@lDWN  : j@lHLD  : @lSTOP : 0)GoMOTION-CMDS-CHAR (UP   : k@lDWN  : j@lLFT  : h@lRGT  : l@lHLD  : @lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS-D2m\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"ayewmp/^MOTION-CMDS-D2m\s(\_[^)]*D2a.*\s:\s\+\zs\_[^)]*)CR"ay$`p"syE"rddGo`p"myEWmp/^READ-MODE\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"yy$GoEC"uddGo`pl"wyi"f"wmpGoVTECEC0"wPI"qddGo@yEBl@e@j@rEBh@w@a"lddGompOEC0d$iSTARTEC0"sdEiLINEEC0"md$i0"cy$EC0"yd$dd`p@l"tdd
 
 =BEGIN
   -> read mode block
@@ -65,24 +68,11 @@ SKIP  : oEC           -> no-op
         -> del cmd
 DEL   : oddEC         -> dd
         -> write cmd
-WRITE : `p                -> header plus jump to mark p
-l"wyi"                    -> yank what is in quotes to reg w
-f"wmp                     -> go to the next instruction, mark place
-Go                        -> bottom of file begin writing
-0CVTECEC              -> write out a macro that replaces text with nothing
-h"wp                    -> alter the macro so it replaces text with reg w
+WRITE : @q0c$EC       -> replace whole line with text in quotes
         -> ins cmd
-        -> comments moster same as write cmd above
-INS   : `p
-l"wyi"
-f"wmp
-Go
-oVTECEC               -> new line instead of replacing old line
-h"wp
-
-        -> load new mode/[y]
+INS   : @qoEC         -> insert text in quotes into newline
+-> load new mode/[y]
 MODE  : @u
-
         -> close block
 )
 
@@ -94,21 +84,9 @@ SKIP  : oEC           -> write out a no-op
         -> del cmd
 DEL   : oxEC          -> write out "x"
         -> write cmd
-WRITE : `p                -> header plus jump to mark p
-l"wyi"                    -> yank what is in quotes to reg w
-f"wmp                     -> go to the next instruction, mark place
-Go                        -> bottom of file begin writing
-0clVTECEC             -> write out a macro that replaces one char with nothing
-h"wp                    -> alter the macro so it replaces text with reg w
+WRITE : @qclEC        -> replace one character with text in quotes
         -> ins cmd
-        -> comments moster same as write cmd above
-INS   : `p
-l"wyi"
-f"wmp
-Go
-aVTECEC               -> append text instead of replacing it
-h"wp
-
+INS   : @qaEC         -> append text in quotes after cursor
         -> load new mode/[y]
 MODE  : @u
         -> close block
@@ -256,8 +234,8 @@ wmp              -> advance to next command, mark place
 "rdd        -> finish writing and load macro
 
   -> MACRO U
+  -> (helper for [r])
   -> load mode into [m] and then populate [y]
-  -> highly coupled to implementation of [r]
 Go       -> begin writing
             -> load mode into [m]
 `p             -> return to p
@@ -277,6 +255,23 @@ Wmp            -> go to next instruction, mark place
 "yy$        -> load macro into y
 GoEC      -> write out a no-op for [r] to read into [w]
 "udd   -> finish writing and load macro
+
+  -> MACRO Q
+  -> (helper for [r])
+  -> prepare text from inside quotes to go into [w]
+  -> all a command must do after calling [q] is write out
+  -> how it will enter insert mode (and escape)
+Go        -> begin writing
+             -> read text into w
+`p              -> jump to mark p
+l"wyi"          -> yank what is in quotes to reg w
+f"wmp           -> go to the next instruction, mark place
+             -> begin writing new w
+Go              -> bottom of file begin writing
+VTECEC      -> write out a line that's just an escape
+0"wP            -> put reg w before the escape
+I               -> enter insert mode at the beginning of the line
+"qdd    -> finish writing and load macro
 
   -> MACRO L
   -> the main loop of the interpreter
