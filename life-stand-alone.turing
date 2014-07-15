@@ -1,0 +1,265 @@
+This is the game of life as run by a turing machine interpreter.
+The core of the turing machine interpreter is written as a single ~1100
+character macro.  The macro in this file has some additional code to
+set up an initial state for the game of life.
+
+Cells are represented by characters:
+.  -> dead cell
+O  -> living cell
+,  -> cell that will stay dead in the next generation
+o  -> cell that will be born
+/  -> living cell that will die
+0  -> living cell that will stay alive
+
+Instructions:
+yank the below line into i ("iyy)
+run it (@i)
+use macro t (@t) to compute the next generation of life
+
+:vsplit /tmp/tapeO+-----+|.....||.....||OOO..||..O..||.O...|+-----+GoREAD-MODE ( ):%s/\n*READ-MODE\s(\_[^)]\+)//GoREAD-MODE (LINE : 0"cy$CHAR : "cyl)GoWRITE-CMDS-LINE ( ):%s/\n*WRITE-CMDS\S\+\s(\_[^)]\+)//GoWRITE-CMDS-LINE (SKIP  : oECDEL   : oddECWRITE : @q0c$ECINS   : @qoEC-> load new mode/[y]MODE  : @u)GoWRITE-CMDS-CHAR (SKIP  : oECDEL   : oxECWRITE : @qclECINS   : @qaECMODE  : @u)GoMOTION-CMDS-LINE ( ):%s/\n*MOTION-CMDS\S\+\s(\_[^)]\+)//GoMOTION-CMDS-LINE (UP   : k@lDWN  : j@lHLD  : @lSTOP : 0)GoMOTION-CMDS-CHAR (UP   : k@lDWN  : j@lLFT  : h@lRGT  : l@lHLD  : @lSTOP : 0)GoGoEC"cpI*EC:s/\([*\\]\)/\\\\\\\1/gCR0xxxxI(EC:s/\([(){:]\)/\\\\\1/gCR0xxxI.EC:s/\([.[\]/^$]\)/\\\1/gCR0xx"cd$dd"eddGo/^D2s\s\+{\_[^}]\{-}\(\\\@<!(\*)\|\\\@<!(D2c\(\\\\\)*)\).*\s:\s\+\zs\_[^}]*}CR"jddGo"wyewmp/^WRITE-CMDS-D2m\s(\_[^)]*D2w.*\s:\s\+\zs\_[^)]*)CR"wy$G@w"wdd`p"ayewmp/^MOTION-CMDS-D2m\s(\_[^)]*D2a.*\s:\s\+\zs\_[^)]*)CR"ay$`p"syE"rddGo`p"myEWmp/^READ-MODE\s(\_[^)]*D2m.*\s:\s\+\zs\_[^)]*)CR"yy$GoEC"uddGo`pl"wyi"f"wmpGoVTECEC0"wPI"qddGo@yEBl@e@j@rEBh@w@a"lddGompOEC0d$iSTARTEC0"sdEiLINEEC0"md$i0"cy$EC0"yd$dd`p@l"tddhgg
+
+The game of life program that gets interpreted by the turing machine
+begins here.
+
+START {
+  (*) : MODE CHAR HLD scan-up
+}
+
+scan-up {
+  (-)(+) : SKIP HLD scan-left
+  (*)    : SKIP UP scan-up
+}
+
+scan-left {
+  (+)(|) : SKIP RGT down-1
+  (-)    : SKIP LFT scan-left
+}
+
+down-1 {
+  (-) : SKIP DWN begin-count
+}
+
+begin-count {
+  (.)(O) : SKIP UP cell-2-1-0
+  (|)    : SKIP LFT pre-newline-scan
+}
+
+-> go to beginning of a newline
+pre-newline-scan {
+  (*) : SKIP DWN newline-scan
+}
+
+newline-scan {
+  (|) : SKIP RGT begin-count
+  (-) : SKIP UP  return-to-top
+  (*) : SKIP LFT newline-scan
+}
+
+return-to-top {
+  (-) : SKIP DWN clean-newline-scan
+  (*) : SKIP UP  return-to-top
+}
+
+clean-newline-scan {
+  (|) : SKIP RGT clean
+  (-) : SKIP UP done
+  (*) : SKIP LFT clean-newline-scan
+}
+
+clean {
+  (0)(o) : WRITE "O" RGT clean
+  (/)(,) : WRITE "." RGT clean
+  (|) :    SKIP LFT pre-clean-newline-scan
+}
+
+pre-clean-newline-scan {
+  (*) : SKIP DWN clean-newline-scan
+}
+
+done {
+  (*) : SKIP STOP
+}
+
+-> directly above
+cell-2-1-0 {
+  (O)(0)(/) : SKIP RGT cell-3-1-1
+  (*)       : SKIP RGT cell-3-1-0
+}
+
+-> upper right
+cell-3-1-0 {
+  (O)(0)(/) : SKIP DWN cell-3-2-1
+  (*)       : SKIP DWN cell-3-2-0
+}
+
+cell-3-1-1 {
+  (O)(0)(/) : SKIP DWN cell-3-2-2
+  (*)       : SKIP DWN cell-3-2-1
+}
+
+-> directly to the right
+cell-3-2-0 {
+  (O)(0)(/) : SKIP DWN cell-3-3-1
+  (*)       : SKIP DWN cell-3-3-0
+}
+
+cell-3-2-1 {
+  (O)(0)(/) : SKIP DWN cell-3-3-2
+  (*)       : SKIP DWN cell-3-3-1
+}
+
+cell-3-2-2 {
+  (O)(0)(/) : SKIP DWN cell-3-3-3
+  (*)       : SKIP DWN cell-3-3-2
+}
+
+-> lower right
+cell-3-3-0 {
+  (O)(0)(/) : SKIP LFT cell-2-3-1
+  (*)       : SKIP LFT cell-2-3-0
+}
+
+cell-3-3-1 {
+  (O)(0)(/) : SKIP LFT cell-2-3-2
+  (*)       : SKIP LFT cell-2-3-1
+}
+
+cell-3-3-2 {
+  (O)(0)(/) : SKIP LFT cell-2-3-3
+  (*)       : SKIP LFT cell-2-3-2
+}
+
+cell-3-3-3 {
+  (O)(0)(/) : SKIP LFT cell-2-3-too-many
+  (*)       : SKIP LFT cell-2-3-3
+}
+
+-> directly below
+cell-2-3-0 {
+  (O)(0)(/) : SKIP LFT cell-1-3-1
+  (*)       : SKIP LFT cell-1-3-0
+}
+
+cell-2-3-1 {
+  (O)(0)(/) : SKIP LFT cell-1-3-2
+  (*)       : SKIP LFT cell-1-3-1
+}
+
+cell-2-3-2 {
+  (O)(0)(/) : SKIP LFT cell-1-3-3
+  (*)       : SKIP LFT cell-1-3-2
+}
+
+cell-2-3-3 {
+  (O)(0)(/) : SKIP UP  write-too-many
+  (*)       : SKIP LFT cell-1-3-3
+}
+
+cell-2-3-too-many {
+  (*)       : SKIP UP write-too-many
+}
+
+-> lower right
+cell-1-3-0 {
+  (O)(0)(/) : SKIP UP cell-1-2-1
+  (*)       : SKIP UP cell-1-2-0
+}
+
+cell-1-3-1 {
+  (O)(0)(/) : SKIP UP cell-1-2-2
+  (*)       : SKIP UP cell-1-2-1
+}
+
+cell-1-3-2 {
+  (O)(0)(/) : SKIP UP cell-1-2-3
+  (*)       : SKIP UP cell-1-2-2
+}
+
+cell-1-3-3 {
+  (O)(0)(/) : SKIP UP cell-1-2-too-many
+  (*)       : SKIP UP cell-1-2-3
+}
+
+-> directly left
+cell-1-2-0 {
+  (O)(0)(/) : SKIP UP cell-1-1-1
+  (*)       : SKIP UP cell-1-1-0
+}
+
+cell-1-2-1 {
+  (O)(0)(/) : SKIP UP cell-1-1-2
+  (*)       : SKIP UP cell-1-1-1
+}
+
+cell-1-2-2 {
+  (O)(0)(/) : SKIP UP cell-1-1-3
+  (*)       : SKIP UP cell-1-1-2
+}
+
+cell-1-2-3 {
+  (O)(0)(/) : SKIP RGT write-too-many
+  (*)       : SKIP UP  cell-1-1-3
+}
+
+cell-1-2-too-many {
+  (*)       : SKIP RGT write-too-many
+}
+
+-> upper-right
+cell-1-1-0 {
+  (O)(0)(/) : SKIP RGT return-too-few
+  (*)       : SKIP RGT return-too-few
+}
+
+cell-1-1-1 {
+  (O)(0)(/) : SKIP RGT return-2
+  (*)       : SKIP RGT return-too-few
+}
+
+cell-1-1-2 {
+  (O)(0)(/) : SKIP RGT return-3
+  (*)       : SKIP RGT return-2
+}
+
+cell-1-1-3 {
+  (O)(0)(/) : SKIP RGT return-too-many
+  (*)       : SKIP RGT return-3
+}
+
+return-too-few {
+  (*) : SKIP DWN write-too-few
+}
+
+return-2 {
+  (*) : SKIP DWN write-2
+}
+
+return-3 {
+  (*) : SKIP DWN write-3
+}
+
+return-too-many {
+  (*) : SKIP DWN write-too-many
+}
+
+write-too-few {
+  (.) : WRITE "," RGT begin-count
+  (O) : WRITE "/" RGT begin-count
+}
+
+write-2 {
+  (.) : WRITE "," RGT begin-count
+  (O) : WRITE "0" RGT begin-count
+}
+
+write-3 {
+  (.) : WRITE "o" RGT begin-count
+  (O) : WRITE "0" RGT begin-count
+}
+
+write-too-many {
+  (.) : WRITE "," RGT begin-count
+  (O) : WRITE "/" RGT begin-count
+}
+
+
